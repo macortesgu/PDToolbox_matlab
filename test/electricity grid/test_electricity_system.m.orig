@@ -54,13 +54,20 @@ time = 60;
 
 % initial condition
 pot = ones(N,T_+1)/(T_+1);
-x0 = pot;
+x0 = pot';
 
 % structure with the parameters of the game
+<<<<<<< HEAD
+%G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode113', 'time', time, 'step', 0.00001, 'x0', x0, 'm', m);
+
+% random initial condition
+G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode23s', 'time', time, 'step', 0.00001, 'm', m);
+=======
 %G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode113', 'time', time, 'tol', 0.00001, 'x0', x0, 'm', m);
 
 % random initial condition
 G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode45', 'time', time, 'tol', 0.000001, 'm', m);
+>>>>>>> fe7991eef070aa3348a2925f266b138fe6292d4b
 
 % verify data of the game
 G = definition(G);
@@ -69,13 +76,27 @@ G.step = .01;
 G.eta = .02;
 
 % run different dynamics
+<<<<<<< HEAD
+G.dynamics = {'bnn'};
+%G.dynamics = {'rd', 'bnn', 'smith', 'logit'};
+%G.gamma = []
+=======
 G.dynamics = {'rd'};
+>>>>>>> fe7991eef070aa3348a2925f266b138fe6292d4b
 G.run()
 T_rd = G.T;
 X_rd = G.X;
 
 
 
+<<<<<<< HEAD
+figure(3); plot(1:1:24, U(:, 1:24))
+figure(4); plot(1:1:24, x(:, 1:24))
+
+%pause
+
+=======
+>>>>>>> fe7991eef070aa3348a2925f266b138fe6292d4b
 G.dynamics = {'bnn'};
 G.run()
 T_bnn = G.T;
@@ -128,6 +149,6 @@ figure(4); plot(1:1:24, x(:, 1:24))
 %min(X_logit)
 
 graph_incentives_evolution
-%G.graph_state()
+G.graph_state()
 
 %sum(G.x0(1:24, :))
