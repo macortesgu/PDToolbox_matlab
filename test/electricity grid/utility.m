@@ -4,8 +4,8 @@ global N T_ beta_ef alpha_ef
 
 power = x;
 
-F = zeros(N,T_+1);
-U = zeros(N,T_+1);
+F = zeros(N,T_+1);%F = zeros(N,T_+1);
+U = zeros(N,T_+1);%U = zeros(N,T_+1);
 %inc = zeros(N,T_);
 
 % calculate the utility

@@ -1,6 +1,5 @@
 function dz = rd(t, z)
-% RD Computes the differential equation that describes the update of the 
-%    populations' state following the replicator dynamics
+% RD Computes the differential equation that describes the update of the populations' state following the replicator dynamics
 % 
 % SYNOPSIS: DZ = RD(T, Z)
 % 

@@ -4,10 +4,10 @@ global beta_ef alpha_ef mp
 
 power = x;
 T_ = 24;
-F = zeros(T_+1,1);
+F = zeros(T_+1,1);%F = zeros(T_+1,1);
 
 index = p;
-n = 24 + 1;
+n = 24+1; %por qué 24+1?
 
 for l = 1 : 24
     q_t = power(index, l);
