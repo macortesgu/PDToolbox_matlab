@@ -5,6 +5,7 @@ PDToolbox is a matlab implementation of some evolutionary dynamics from game the
 
 This toolbox is designed to facilitate the implementation of any game, regardless of the number of populations, strategies per population, and fitness function. It has some pre-build methods to implement different dynamics, revision protocols, and to plot the evolution of the state of each population. This software is distributed under BSD license.
 
+*** Modified working file is /test/electricity grid/testRA.m ****
 
 ## Installation
 

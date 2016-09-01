@@ -8,7 +8,7 @@ function G = definition(G)
 % INPUT G1: Structure with some parameters of the game
 % 
 % OUTPUT G2: Structure with all the parameters and functions required to run
-%            a the game 
+%            the game 
 % 
 % REMARKS This function uses the global variables "norm_dx" and "c_error".
 %         Its recommended to avoid their use in other files because they 
