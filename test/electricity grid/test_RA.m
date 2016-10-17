@@ -1,8 +1,8 @@
-% example of a game with one population, three strategies per population, and combined dynamics.
+% example of a game with one population. three strategies per population. and combined dynamics.
 
 % TODO:
 % review how are the transitions between dynamics
-% review why rd and logit are so similar in aggregated evolution, but
+% review why rd and logit are so similar in aggregated evolution. but
 % differents in incentives
 
 % population games tool box
@@ -15,26 +15,32 @@ q_min=0;
 N = 2;
 
 %Definition of the electricity variables
-Dt = 15*[51.8743   50.0011   48.6104    48.6384    51.1276    58.7756 ...
-    61.0654   65.0167   69.6593    71.6363    75.3904    76.2807 ...
-    73.4635   73.3627   74.6492    75.1194    74.8689    74.1951 ...
-    78.2569   85.8935   83.5392    77.9073    68.6800   60.5177];
+%TODO: Include here variation with constructed residential user' load
+%curve. having the total energy limit.
+%Dt = 15*[51.8743   50.0011   48.6104    48.6384    51.1276    58.7756 ...
+%    61.0654   65.0167   69.6593    71.6363    75.3904    76.2807 ...
+%    73.4635   73.3627   74.6492    75.1194    74.8689    74.1951 ...
+%    78.2569   85.8935   83.5392    77.9073    68.6800   60.5177];
+Dt = 1*[0.18	0.18	0.18	0.18	0.18	0.66 ...
+ 0.66	0.18	0.18	0.18	0.30	0.30 ...
+ 0.20	0.31	0.36	0.18	0.28	0.28 ...
+ 0.47	0.45	0.39	0.28	0.18	0.18];
 
 % Dt = [1   1   1    1    1    1 ...
 %     1   1   1    1    1    1 ...
 %     1   1   1    1    1    1 ...
 %     1   1   1    1    1    1 ];
 
-pt = Dt./max(Dt)*18.575; %18.575
+pt = Dt./max(Dt)*24; %TODO: Analize pt and effect of coefficients in population stable state.
 
 % number of strategies
 T_ = length(Dt);
 
 % valuation parameters of all agents
-% valoraci�n homog�nea entre poblaciones
+% valoracion homogenea entre poblaciones
 alpha_ef = zeros(N,T_);
 for i=1:N
-    alpha_ef(i,:) = pt(1:T_);%*(1+.5*i/N*0) + 0.*rand(1,T_);
+    alpha_ef(i,:) = pt(1:T_);%*(1+.5*i/N*0) + 0.*rand(1.T_);
 end
 
 % parametros de la func. de costo agregado
@@ -50,24 +56,24 @@ time_off = 4;
 P =N;
 
 % number of pure strategies per population
-n = 24;%25 % MC. Energía , o potencia? que se distribuye entre los agentes, por cada población.
+n = 24;%25 % MC. Energia . o potencia? que se distribuye entre los agentes. por cada poblacion.
 
-% mass of the populations
-mp = 14; %14
+% mass of the populations -- allocated resources?
+mp = 6.8825; %14
 m = ones(P, 1) * mp;
 
 % simulation parameters
 time = 60;
 
 % initial condition
-pot = ones(N,T_)/(T_);%pot = ones(N,T_+1)/(T_+1);
+pot = ones(N,T_)/(T_);%pot = ones(N.T_+1)/(T_+1);
 x0 = pot;
 
 % structure with the parameters of the game
 G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode113', 'time', time, 'tol', 0.00001, 'x0', x0, 'm', m);
 
 % random initial condition
-%G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode45', 'time', time, 'tol', 0.000001, 'm', m);
+%G = struct('P'. P. 'n'. n. 'f'. @fitness_user. 'ode'. 'ode45'. 'time'. time. 'tol'. 0.000001. 'm'. m);
 
 % verify data of the game
 G = definition(G);
@@ -95,11 +101,11 @@ X_rd = G.X;
 
 % % extract matrix of strategies
 % %n = max(G.S);
-% x_n = vec2mat(X_dyn(end, :), n);
-% x = zeros(G.P, n);
+% x_n = vec2mat(X_dyn(end. :). n);
+% x = zeros(G.P. n);
 % 
 % for p = 1 : G.P
-%     x(p, :) = x_n(p, :) * G.m(p);
+%     x(p. :) = x_n(p. :) * G.m(p);
 % end
 % 
 % U = utility(x);
