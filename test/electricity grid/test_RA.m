@@ -21,6 +21,7 @@ N = 2;
 %    61.0654   65.0167   69.6593    71.6363    75.3904    76.2807 ...
 %    73.4635   73.3627   74.6492    75.1194    74.8689    74.1951 ...
 %    78.2569   85.8935   83.5392    77.9073    68.6800   60.5177];
+
 Dt = 1*[0.18	0.18	0.18	0.18	0.18	0.66 ...
  0.66	0.18	0.18	0.18	0.30	0.30 ...
  0.20	0.31	0.36	0.18	0.28	0.28 ...
@@ -31,7 +32,7 @@ Dt = 1*[0.18	0.18	0.18	0.18	0.18	0.66 ...
 %     1   1   1    1    1    1 ...
 %     1   1   1    1    1    1 ];
 
-pt = Dt./max(Dt)*24; %TODO: Analize pt and effect of coefficients in population stable state.
+pt = Dt./max(Dt)*20; %TODO: Analize pt and effect of coefficients in population stable state.
 
 % number of strategies
 T_ = length(Dt);
@@ -63,7 +64,7 @@ mp = 6.8825; %14
 m = ones(P, 1) * mp;
 
 % simulation parameters
-time = 60;
+time = 70;
 
 % initial condition
 pot = ones(N,T_)/(T_);%pot = ones(N.T_+1)/(T_+1);

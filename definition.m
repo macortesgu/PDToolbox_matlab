@@ -86,7 +86,7 @@ end
 
 
 % check if the initial conditions match with the mass of the population
-if abs(sum(G.x0, 2) - ones(G.P, 1)) >= eps(ones(G.P, 1))
+if eps(abs(sum(G.x0, 2) - ones(G.P, 1))) >= eps(ones(G.P, 1))
     warning('Populations` initial state x0 does not match the mass m.')
 end
 
