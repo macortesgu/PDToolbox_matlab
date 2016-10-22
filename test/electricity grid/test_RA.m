@@ -7,8 +7,9 @@
 
 % population games tool box
 clear
+close all
 
-global G beta_ef alpha_ef time_on time_off mp N T_ hybrid b q_min
+global G beta_ef alpha_ef time_on time_off mp N T_ hybrid b q_min Dt ptCoeff
 
 q_min=0;
 
@@ -22,17 +23,14 @@ N = 2;
 %    73.4635   73.3627   74.6492    75.1194    74.8689    74.1951 ...
 %    78.2569   85.8935   83.5392    77.9073    68.6800   60.5177];
 
-Dt = 1*[0.18	0.18	0.18	0.18	0.18	0.66 ...
- 0.66	0.18	0.18	0.18	0.30	0.30 ...
- 0.20	0.31	0.36	0.18	0.28	0.28 ...
- 0.47	0.45	0.39	0.28	0.18	0.18];
+
 
 % Dt = [1   1   1    1    1    1 ...
 %     1   1   1    1    1    1 ...
 %     1   1   1    1    1    1 ...
 %     1   1   1    1    1    1 ];
 
-pt = Dt./max(Dt)*20; %TODO: Analize pt and effect of coefficients in population stable state.
+pt = Dt./max(Dt)*ptCoeff; %TODO: Analize pt and effect of coefficients in population stable state.
 
 % number of strategies
 T_ = length(Dt);
@@ -121,7 +119,9 @@ X_rd = G.X;
 
 
 % extract matrix of strategies. 
-%MC. A strategy means a specific consumption in a specific time t.
+%MC. A strategy should mean a specific consumption in a specific time t.
+%Apparently, what I am getting now is that strategies are consumption
+%intervals (i.e. hours, 24.)
 x_n = vec2mat(G.X(end, :), n);
 x = zeros(G.P, n);
 for p = 1 : G.P
@@ -129,11 +129,21 @@ for p = 1 : G.P
 end
 U = utility(x);
 
-figure(3); plot(1:1:T_, U(:, 1:T_))
-title('Graph of Utility per population')
+figure(3);
+clf
+plot(1:1:T_, U)
+tit = strcat('Utility per population, ptCoeff: ', num2str(ptCoeff));
+title(tit)
+name = strcat('utility','pt',num2str(ptCoeff));
+savefig(3, name, 'compact');
 
-figure(4); plot(1:1:T_, x(:, 1:T_))
-title('Graph of Power allocation per population')
+figure(4); 
+clf
+plot(1:1:T_, x)
+titPower = strcat('Power allocation per population, ptCoeff: ', num2str(ptCoeff));
+title(titPower)
+nameP = strcat('power','pt',num2str(ptCoeff));
+savefig(4, nameP, 'compact');
 
 %%Resource allocation verification test
 for count = 1 : G.P
@@ -149,7 +159,7 @@ resources_allocated
 
 %min(X_logit)
 
-graph_incentives_evolution
+%graph_incentives_evolution
 
 %G.graph_state()
 
