@@ -9,31 +9,39 @@
 clear
 close all
 
-global G beta_ef alpha_ef time_on time_off mp N T_ hybrid b q_min Dt ptCoeff
+global G beta_ef alpha_ef time_on time_off mp N T_ hybrid b q_min ptCoeff addcost
 
 q_min=0;
 
-N = 2;
+N = 1000; 
+
+% number of populations
+P =N;
+
+% mass of the populations -- allocated resources?
+mp = 6.8825; %14
+m = ones(P, 1) * mp;
 
 %Definition of the electricity variables
-%TODO: Include here variation with constructed residential user' load
-%curve. having the total energy limit.
-%Dt = 15*[51.8743   50.0011   48.6104    48.6384    51.1276    58.7756 ...
-%    61.0654   65.0167   69.6593    71.6363    75.3904    76.2807 ...
-%    73.4635   73.3627   74.6492    75.1194    74.8689    74.1951 ...
-%    78.2569   85.8935   83.5392    77.9073    68.6800   60.5177];
-
-
 
 % Dt = [1   1   1    1    1    1 ...
 %     1   1   1    1    1    1 ...
 %     1   1   1    1    1    1 ...
 %     1   1   1    1    1    1 ];
 
+%Example consumption daily profile, constructed starting from total energy consumption
+%historical data.
+
+Dt = [0.18	0.18	0.18	0.18	0.18	0.66 ...
+ 0.66	0.18	0.18	0.18	0.30	0.30 ...
+ 0.20	0.31	0.36	0.18	0.28	0.28 ...
+ 0.47	0.45	0.39	0.28	0.18	0.18];
+
+
 pt = Dt./max(Dt)*ptCoeff; %TODO: Analize pt and effect of coefficients in population stable state.
 
 % number of strategies
-T_ = length(Dt);
+T_ = length(Dt); % should be any value and work normal as well.
 
 % valuation parameters of all agents
 % valoracion homogenea entre poblaciones
@@ -51,15 +59,8 @@ time_on = 2;
 time_off = 4;
 
 
-% number of populations
-P =N;
-
 % number of pure strategies per population
 n = 24;%25 % MC. Energia . o potencia? que se distribuye entre los agentes. por cada poblacion.
-
-% mass of the populations -- allocated resources?
-mp = 6.8825; %14
-m = ones(P, 1) * mp;
 
 % simulation parameters
 time = 70;
@@ -72,7 +73,7 @@ x0 = pot;
 G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode113', 'time', time, 'tol', 0.00001, 'x0', x0, 'm', m);
 
 % random initial condition
-%G = struct('P'. P. 'n'. n. 'f'. @fitness_user. 'ode'. 'ode45'. 'time'. time. 'tol'. 0.000001. 'm'. m);
+%G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode45', 'time', time, 'tol', 0.000001, 'm', m);
 
 % verify data of the game
 G = definition(G);
@@ -132,17 +133,17 @@ U = utility(x);
 figure(3);
 clf
 plot(1:1:T_, U)
-tit = strcat('Utility per population, ptCoeff: ', num2str(ptCoeff));
+tit = strcat('Utility per population, % addcost: ', num2str(addcost));
 title(tit)
-name = strcat('utility','pt',num2str(ptCoeff));
+name = strcat('utility','%',num2str(addcost));
 savefig(3, name, 'compact');
 
 figure(4); 
 clf
 plot(1:1:T_, x)
-titPower = strcat('Power allocation per population, ptCoeff: ', num2str(ptCoeff));
+titPower = strcat('Power allocation per population, % addcost: ', num2str(addcost));
 title(titPower)
-nameP = strcat('power','pt',num2str(ptCoeff));
+nameP = strcat('power','%',num2str(addcost));
 savefig(4, nameP, 'compact');
 
 %%Resource allocation verification test
@@ -159,7 +160,7 @@ resources_allocated
 
 %min(X_logit)
 
-%graph_incentives_evolution
+graph_incentives_evolution
 
 %G.graph_state()
 
