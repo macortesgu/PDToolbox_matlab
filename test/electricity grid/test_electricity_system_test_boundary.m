@@ -12,10 +12,11 @@ ith = 1;
 
 global G
 
-global beta_ef alpha_ef mp N T_
+global beta_ef alpha_ef mp N T_ addcost
 
 
 size_P = 2:2:200;
+addcost = 0;
 
 U_pareto = zeros(1, length(size_P));
 U_nash = zeros(1, length(size_P));
@@ -68,10 +69,10 @@ time = 30;
 
 pot_r = ones(N,T_+1)*mp/(T_+1);
 zz = pot_r'/mp;
-x0 = zz(:);
+x0 = zz';%(:);
 
 % structure with the parameters of the game
-G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode113', 'time', time, 'step', 0.00001, 'x0', x0, 'm', m);
+G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode45', 'time', time, 'tol', 0.00001, 'x0', x0, 'm', m);
 
 % random initial condition
 %G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode23s', 'time', time, 'step', 0.00001);

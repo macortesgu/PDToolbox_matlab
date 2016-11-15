@@ -10,7 +10,7 @@ h_f =@(q_i) price( q_i * N/(N-1) );
 % rd dynamics
 T = T_rd;
 X = X_rd;
-n = T_ %;+ 1;
+n = T_+ 1;
 
 U_avg_rd = zeros(1,length(T));
 I_avg_rd = zeros(1,length(T));
