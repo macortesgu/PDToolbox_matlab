@@ -11,22 +11,21 @@ close all
 
 global G beta_ef alpha_ef time_on time_off N T_ hybrid b q_min valCoeff addcost
 
-q_min=0;
+
 
 N = 10;
 
-
-addcost = 10;
+addcost = 0;
 
 % number of populations
 P =N;
 
 % mass of the populations -- allocated resources?
-mp = 5; %14
+mp = 5*7; %5
 m = ones(P, 1) * mp;
 
-mp2 = 6.88;
-m(P/2 +1:P) = mp2;
+mp2 = 6.88*7;
+m(P/2+1:P) = mp2;
 
 %Definition of the electricity variables
 
@@ -41,13 +40,38 @@ m(P/2 +1:P) = mp2;
 Dt = [0.18	0.18	0.18	0.18	0.18	0.66 ...
  0.66	0.18	0.18	0.18	0.30	0.30 ...
  0.20	0.31	0.36	0.18	0.28	0.28 ...
+ 0.47	0.45	0.39	0.28	0.18	0.18 ...
+ 0.18	0.18	0.18	0.18	0.18	0.66 ...
+ 0.66	0.18	0.18	0.18	0.30	0.30 ...
+ 0.20	0.31	0.36	0.18	0.28	0.28 ...
+ 0.47	0.45	0.39	0.28	0.18	0.18 ...
+ 0.18	0.18	0.18	0.18	0.18	0.66 ...
+ 0.66	0.18	0.18	0.18	0.30	0.30 ...
+ 0.20	0.31	0.36	0.18	0.28	0.28 ...
+ 0.47	0.45	0.39	0.28	0.18	0.18 ...
+ 0.18	0.18	0.18	0.18	0.18	0.66 ...
+ 0.66	0.18	0.18	0.18	0.30	0.30 ...
+ 0.20	0.31	0.36	0.18	0.28	0.28 ...
+ 0.47	0.45	0.39	0.28	0.18	0.18 ...
+ 0.18	0.18	0.18	0.18	0.18	0.66 ...
+ 0.66	0.18	0.18	0.18	0.30	0.30 ...
+ 0.20	0.31	0.36	0.18	0.28	0.28 ...
+ 0.47	0.45	0.39	0.28	0.18	0.18 ...
+ 0.18	0.18	0.18	0.18	0.18	0.66 ...
+ 0.66	0.18	0.18	0.18	0.30	0.30 ...
+ 0.20	0.31	0.36	0.18	0.28	0.28 ...
+ 0.47	0.45	0.39	0.28	0.18	0.18 ...
+ 0.18	0.18	0.18	0.18	0.18	0.66 ...
+ 0.66	0.18	0.18	0.18	0.30	0.30 ...
+ 0.20	0.31	0.36	0.18	0.28	0.28 ...
  0.47	0.45	0.39	0.28	0.18	0.18];
 
 valCoeffBase = 0.5*N*max(Dt)/(min(Dt)*9*sqrt(var(Dt)));%*2.5*mean(Dt)); % valor empirico asociado a la valoracion que dan los usuarios al recurso en una hora determinada.
 valCoeff = valCoeffBase-2;
 
-pt = Dt./max(Dt)*valCoeff; %TODO: Analize pt and effect of coefficients in population stable state.
+q_min=0.12;
 
+pt = Dt./max(Dt)*valCoeff; %TODO: Analize pt and effect of coefficients in population stable state.
 
 % number of strategies
 T_ = length(Dt); % should be any value and work normal as well.
@@ -75,7 +99,7 @@ time_off = 4;
 
 
 % number of pure strategies per population
-n = 24+1;%25 % MC. Energia . o potencia? que se distribuye entre los agentes. por cada poblacion.
+n = T_+1;%(24*7)+1;%25 % MC. Energia . o potencia? que se distribuye entre los agentes. por cada poblacion.
 
 % simulation parameters
 time = 20;
@@ -85,7 +109,7 @@ pot = ones(N,T_+1)/(T_+1);
 x0 = pot;
 
 % structure with the parameters of the game
-G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode113', 'time', time, 'tol', 0.00001, 'x0', x0, 'm', m);
+G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode45', 'time', time, 'tol', 0.00001, 'x0', x0, 'm', m);
 
 % random initial condition
 %G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode45', 'time', time, 'tol', 0.000001, 'm', m);
@@ -145,7 +169,7 @@ U = utility(x);
 
 figure(3);
 clf
-plot(1:1:T_, U(1,1:24))
+plot(1:1:T_, U(1,1:T_))
 tit = strcat('Utility per population, % addcost: ', num2str(addcost));
 title(tit)
 name = strcat('utility','%',num2str(addcost));
@@ -153,14 +177,14 @@ savefig(3, name, 'compact');
 
 figure(4); 
 clf
-plot(1:1:T_, x(1,1:24))
+plot(1:1:T_, x(1,1:T_))
 titPower = strcat('Power allocation per user [kW]');%, % addcost: ', num2str(addcost));
 title(titPower)
 xlabel('Time [h]') % x-axis label
 %ylabel('sine and cosine values') % y-axis label
 nameP = strcat('power','%',num2str(addcost));
 hold on
-plot(1:1:T_, x(10,1:24))
+plot(1:1:T_, x(10,1:T_))
 savefig(4, nameP, 'compact');
 
 

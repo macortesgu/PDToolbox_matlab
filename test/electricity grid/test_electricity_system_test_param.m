@@ -12,8 +12,9 @@ ith = 1;
 
 global G
 
-global beta_ef alpha_ef mp N T_ addcost
+global beta_ef alpha_ef mp N T_ addcost q_min
 
+q_min=50;
 
 size_P = 2:2:20;
 addcost = 0;

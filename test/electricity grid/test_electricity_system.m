@@ -10,7 +10,7 @@ clear
 
 global G beta_ef alpha_ef time_on time_off mp N T_ hybrid b q_min
 
-q_min=0;
+q_min=50;
 
 N = 5;
 
@@ -57,10 +57,10 @@ pot = ones(N,T_+1)/(T_+1);
 x0 = pot;
 
 % structure with the parameters of the game
-%G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode113', 'time', time, 'tol', 0.00001, 'x0', x0, 'm', m);
+G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode45', 'time', time, 'tol', 0.00001, 'x0', x0, 'm', m);
 
 % random initial condition
-G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode45', 'time', time, 'tol', 0.000001, 'm', m);
+%G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode45', 'time', time, 'tol', 0.000001, 'm', m);
 
 % verify data of the game
 G = definition(G);
