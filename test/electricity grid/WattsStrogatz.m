@@ -23,7 +23,7 @@ for source=1:N
     t(source, switchEdge) = ind(1:nnz(switchEdge));
 end
 
-h = graph(s,t);
+h = graph(s,t); %s,t,weights
 end
 
 % Copyright 2015 The MathWorks, Inc.

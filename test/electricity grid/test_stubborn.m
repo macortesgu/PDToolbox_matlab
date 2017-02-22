@@ -1,9 +1,5 @@
-% example of a game with one population. three strategies per population. and combined dynamics.
-
-% TODO:
-% review how are the transitions between dynamics
-% review why rd and logit are so similar in aggregated evolution. but
-% differents in incentives
+% Test for mechanism with social incentives (opinion dynamics), with Bullo stubbornnes model. 
+% Replicator dynamics used for resource allocation optimization.
 
 % population games tool box
 clear
@@ -13,7 +9,7 @@ global G beta_ef alpha_ef time_on time_off N T_ hybrid b q_min valCoeff addcost 
 
 
 
-N = 100;
+N = 50;
 
 addcost = 0;%percent
 
@@ -22,22 +18,33 @@ addcost = 0;%percent
 %N = 600;
 K = 5;
 beta = 0.6; %link probability
-tMax = 10e3;
-c_eps = 1e-6;
+tMax = 1e3; %Max. iterations for op dynamics
+c_eps = 0.09;%1e-6;
 
 G = WattsStrogatz(N,K,beta); %%graph with small world properties
 A = adjacency(G);
 
-s = rand(N,1);% %zeros(1,N)initial beliefs of users
-opEps = 0.4;
+s = linspace(0,1,N);% %zeros(N,1)initial beliefs of users
 
-fprintf(1,'å: %3.2f\n', opEps);   
-[~, opinion] = hkLocal(A, s, opEps, tMax, c_eps, 'plot');
+%opEps = 0.4; Bounded confidence parameter for HK op dyn model
 
-op = opinion(:,end);%zeros(1,T_);%
+%% susceptibility (1-stubborness) theta of the agents
+theta = (1- (logspace(0, 3, N)/1000))';%column vector of susceptibility
+%define iterations
+Ti = 50;
+%define self confidence
+w1 = logspace(0, 3, N)/1000;
+w2 = fliplr(w1);
+w = (w1+w2)/2;
+w = w';
+%fprintf(1,'å: %3.2f\n', opEps);   
+%[~, opinion] = hkLocal(A, s, opEps, tMax, c_eps, 'plot');
+
+opinion = bullo2(s,N,A,theta,tMax,w, c_eps, 'plot');
+
+op = opinion(:,end); %zeros(1,T_);%
 
 %% Everything else
-
 % number of populations
 P =N;
 
@@ -129,7 +136,7 @@ time = 20;
 
 % initial condition
 pot = ones(N,T_+1)/(T_+1);
-x0 = pot;
+x0 = pot;%pot;
 
 % structure with the parameters of the game
 G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode45', 'time', time, 'tol', 0.00001, 'x0', x0, 'm', m);
@@ -198,20 +205,26 @@ title(tit)
 name = strcat('utility','%',num2str(addcost));
 savefig(3, name, 'compact');
 
+%% sumas de potencia para graficar
+for i=1:(T_)
+    sum_x(i) = sum( x(:, i) );
+    sum_x0(i) = sum( mp*x0(:,i));
+end
+
 figure(4); 
 clf
-plot(1:1:T_, x(1,1:T_))
-titPower = strcat('Power allocation per user [kW]');%, % addcost: ', num2str(addcost));
+plot(1:1:T_, sum_x(1,1:T_))
+titPower = strcat('Power allocation in the society [kW]');%, % addcost: ', num2str(addcost));
 title(titPower)
 xlabel('Time [h]') % x-axis label
 %ylabel('sine and cosine values') % y-axis label
 nameP = strcat('power','%',num2str(addcost));
 hold on
-plot(1:1:T_, x(10,1:T_))
+    plot(1:1:T_, sum_x0(1,1:T_))
 savefig(4, nameP, 'compact');
 
 
-%%Resource allocation verification test
+%% Resource allocation verification test
 for count = 1 : G.P
     resources_alloc_pu(count,1) = sum(x_n(count,1:T_));
     resources_allocated(count,1)= sum(x(count,1:T_));
@@ -220,6 +233,10 @@ end
 resources_alloc_pu
 resources_allocated
 
+figure(7)
+iter= 1:50;
+plot(iter,theta, iter, w, iter, s)
+legend('susceptibility','self-conf','i.c.','Location','NorthEastOutside')
 
 %if min(X_logit == )
 
