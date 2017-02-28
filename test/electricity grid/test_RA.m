@@ -87,8 +87,8 @@ Dt = [0.18	0.18	0.18	0.18	0.18	0.66 ...
  0.20	0.31	0.36	0.18	0.28	0.28 ...
  0.47	0.45	0.39	0.28	0.18	0.18];
 
-valCoeffBase = 0.5*N*max(Dt)/(min(Dt)*9*sqrt(var(Dt)));%*2.5*mean(Dt)); % valor empirico asociado a la valoracion que dan los usuarios al recurso en una hora determinada.
-valCoeff = valCoeffBase;%-2;
+%valCoeffBase = 0.5*N*max(Dt)/(min(Dt)*9*sqrt(var(Dt)));%*2.5*mean(Dt)); % valor empirico asociado a la valoracion que dan los usuarios al recurso en una hora determinada.
+valCoeff = 50;%valCoeffBase;%-2;
 
 %Minimum energy consumption for all users during a time lapse.
 q_min=0;%.12
