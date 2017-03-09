@@ -19,7 +19,7 @@ function dz = rd(t, z)
 % 
 % Carlos Barreto, 04-11-16 
 
-global G norm_dx q_min
+global G norm_dx
 
 n = max(G.S); 
 
@@ -31,14 +31,12 @@ x_dot_v = zeros(G.P* n, 1);
 x_n = vec2mat(z, n);
 x = zeros(G.P, n);
 
-
 for p = 1 : G.P
     x(p, :) = x_n(p, :) * G.m(p);
 end
 
 if G.pop_wise == 0
 	F(:, :) = G.f(x);
-   
 else
 	for p = 1 : G.P
    		F(p, :) = G.f(x, p);
@@ -49,13 +47,10 @@ for p = 1 : G.P
     F_mean(p) = F(p, :) * x_n(p, :)';
 
     % calculate update in the strategy
-    
-    restrictionSafe = (x_n(p,:) >= (1.01.*q_min(p,:))); %check is population state is not below admissible minima
-    
-    
-    F_excess = restrictionSafe.*(F(p, :) - ones(1, n) * F_mean(p)); %set 0 excess payoff if restrictionSafe is false
+    F_excess = F(p, :) - ones(1, n) * F_mean(p);
     x_dot_v ( (p-1)*n + 1 : p*n ) = F_excess .* x_n(p, :);
 end
+
 dz = [x_dot_v];
 if G.stop_c == true
     norm_dx = norm(dz);

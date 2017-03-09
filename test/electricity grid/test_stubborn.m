@@ -1,9 +1,18 @@
 % Test for mechanism with social incentives (opinion dynamics), with Bullo stubbornnes model. 
 % Replicator dynamics used for resource allocation optimization.
+clc
+clear
+
+close all
+
+global G beta_ef alpha_ef time_on time_off N T_ hybrid b q_min valCoeff addcost op mp
+
+N = 10;
+addcost = 0;
 
 step_1_graph
 
-s = linspace(1,0,N);% %zeros(N,1)initial beliefs of users
+s = linspace(1,0.2,N);% %zeros(N,1)initial beliefs of users
 tMax = 1e3; %Max. iterations for op dynamics
 c_eps = 1e-4;%1e-6; error aceptable para la convergencia
 %opEps = 0.4; Bounded confidence parameter for HK op dyn model
@@ -13,14 +22,14 @@ theta = (1-(logspace(0, 3, N)/1000))';%column vector of susceptibility
 %define self confidence
 w1 = logspace(0, 3, N)/1000;
 w2 = fliplr(w1);
-w = (w1+w2);
+w = (w1+w2)/2;
 w = w';
 %fprintf(1,'å: %3.2f\n', opEps);   
 %[~, opinion] = hkLocal(A, s, opEps, tMax, c_eps, 'plot');
 
 opinion = bullo2(s,N,Aw,theta,tMax,w, c_eps, 'plot');
 
-social_incentives = 'sInc';
+social_incentives = 'none';
 switch social_incentives
     case 'sInc'
         op = opinion(:,end); %zeros(1,T_);%
@@ -43,11 +52,24 @@ P =N;
 xlRange = 'A:B';
 DtOrig = xlsread('PerfilConsumoEjemplo.xlsx','Gen',xlRange); %load weekly profile from Excel, with minute-resolution
 
-kWhOrig = sum(DtOrig)/(1000*60);
-freq_p=1;
-freq_q=60;
-Dt = resample(DtOrig,freq_p,freq_q);
-kWh = kWhOrig;%sum(Dt)/1000;
+kWhOrig = trapz(DtOrig)/(1000*60);%original signal has minute resolution, and energy is measured in kWh
+%freq_p=1;
+%freq_q=5;
+%d_factor = 5;
+
+%tx = 1:1:length(DtOrig);
+%tz = 1:d_factor:length(DtOrig);
+
+%Dt = resample(DtOrig,tx,'pchip');
+Dt = DtOrig;%decimate(DtOrig(:,1), d_factor, 40, 'FIR');
+kWh = kWhOrig;%trapz(Dt)/(1000*60/(freq_q/freq_p));
+
+
+
+%figure();
+%plot(tx,DtOrig(:,1),'+-',tz,Dt(:,1),'o:')
+%legend('original','resampled')
+
 
 % mass of the populations -- allocated resources?
 mp = kWh(1);
@@ -89,10 +111,13 @@ m(P/2+1:P) = mp2;
 
 %valCoeffBase = 0.5*N*max(Dt)/(min(Dt)*9.*sqrt(var(Dt)));%*2.5*mean(Dt)); % valor empirico asociado a la valoracion que dan los usuarios al recurso en una hora determinada.
 %valCoeffBase = N*max(Dt)/(5*min(Dt));%*2.5*mean(Dt)); 
-valCoeff = 100;%valCoeffBase;%-2; 110 w/inc, 60 w/o inc
+valCoeff = 20;%valCoeffBase;%-2; 110 w/inc, 60 w/o inc
 
 %Minimum energy consumption for all users during a time lapse.
-q_min=mean(min(Dt))/1000;%.12. Value in kW
+
+%q_min is a matriz of (N, T_+1)
+q_min = repmat(((mean((min(Dt))/1000)./m)), 1,T_+1);%.12. Value in p.u, first converted to kW, then normalized with the pop mass
+
 
 pt = Dt./max(Dt)*valCoeff; %TODO: Analize pt and effect of coefficients in population stable state.
 
@@ -127,7 +152,7 @@ b = 0;
 n = T_+1;%(24*7)+1;%25 % MC. Energia . o potencia? que se distribuye entre los agentes. por cada poblacion.
 
 % simulation parameters
-time = 20;
+time = 30;
 
 % initial condition
 pot=ones(N,T_+1)/(1*(T_+1));
@@ -212,14 +237,15 @@ end
 
 figure(4); 
 clf
-plot(1:1:T_, sum_x(1:T_,1))
+plot(1:1:T_, sum_x(1:T_,1), 1:1:T_, sum_x0(1:T_,1))
 titPower = strcat('Power allocation in the society [kW]');%, % addcost: ', num2str(addcost));
 %title(titPower)
-xlabel('Time [h]') % x-axis label
+xlabel('Time [min]') % x-axis label
 ylabel(titPower) % y-axis label
+legend('Final allocation','Starting allocation')
 nameP = strcat('power',netType,num2str(N),social_incentives);
-hold on
-    plot(1:1:T_, sum_x0(1:T_,1))
+%hold on
+%    plot(1:1:T_, sum_x0(1:T_,1))
 savefig(4, nameP, 'compact');
 
 
@@ -232,13 +258,18 @@ for count = 1 : G.P
 end
 
 resources_alloc_pu
-resources_allocated
+total_resources_alloc = sum(resources_allocated);
+disp(['Allocated total energy: ' num2str(total_resources_alloc) ' kWh']);
+disp(['Available total energy: ' num2str(sum(m)) ' kWh']);
+disp(['Energy use ratio: ' num2str(total_resources_alloc/sum(m))]);
 
 figure(7)
 iter= 1:N;
 plot(iter,theta, iter, w, iter, s)
 legend('susceptibility','self-conf','i.c.','Location','NorthEastOutside')
-savefig(7, 'paramteres', 'compact');
+xlabel('Users');
+ylabel('Parameter value')
+savefig(7, 'parameters', 'compact');
 %if min(X_logit == )
 
 %min(X_logit)
