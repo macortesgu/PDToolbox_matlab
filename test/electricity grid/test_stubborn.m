@@ -7,27 +7,28 @@ close all
 
 global G beta_ef alpha_ef time_on time_off N T_ hybrid b q_min valCoeff addcost op mp
 
-N = 10;
+%number of populations (consumers, households)
+P = 5;
 addcost = 0;
 
 step_1_graph
 
-s = linspace(1,0.2,N);% %zeros(N,1)initial beliefs of users
+s = linspace(1,0.2,P);% %zeros(N,1)initial beliefs of users
 tMax = 1e3; %Max. iterations for op dynamics
 c_eps = 1e-4;%1e-6; error aceptable para la convergencia
 %opEps = 0.4; Bounded confidence parameter for HK op dyn model
 
 %% susceptibility (1-stubborness) theta of the agents
-theta = (1-(logspace(0, 3, N)/1000))';%column vector of susceptibility
+theta = (1-(logspace(0, 3, P)/1000))';%column vector of susceptibility
 %define self confidence
-w1 = logspace(0, 3, N)/1000;
+w1 = logspace(0, 3, P)/1000;
 w2 = fliplr(w1);
 w = (w1+w2)/2;
 w = w';
 %fprintf(1,'å: %3.2f\n', opEps);   
 %[~, opinion] = hkLocal(A, s, opEps, tMax, c_eps, 'plot');
 
-opinion = bullo2(s,N,Aw,theta,tMax,w, c_eps, 'plot');
+opinion = bullo2(s,P,Aw,theta,tMax,w, c_eps, 'plot');
 
 social_incentives = 'none';
 switch social_incentives
@@ -35,7 +36,7 @@ switch social_incentives
         op = opinion(:,end); %zeros(1,T_);%
         
     otherwise
-        op = zeros(N,1); %No use of social incentives
+        op = zeros(P,1); %No use of social incentives
         social_incentives = 'noneInc';
 end
 
@@ -44,8 +45,8 @@ end
 %save('Caso1.mat','Gw','opinion'); 
 
 %% Everything else
-% number of populations
-P =N;
+% number of agents per population (devices)
+N = 7;
 
 %Example consumption daily profile, constructed starting from total energy consumption
 %historical data, in kWh
@@ -55,14 +56,15 @@ DtOrig = xlsread('PerfilConsumoEjemplo.xlsx','Gen',xlRange); %load weekly profil
 kWhOrig = trapz(DtOrig)/(1000*60);%original signal has minute resolution, and energy is measured in kWh
 %freq_p=1;
 %freq_q=5;
-%d_factor = 5;
+d_factor = 10;
 
 %tx = 1:1:length(DtOrig);
 %tz = 1:d_factor:length(DtOrig);
 
 %Dt = resample(DtOrig,tx,'pchip');
-Dt = DtOrig;%decimate(DtOrig(:,1), d_factor, 40, 'FIR');
-kWh = kWhOrig;%trapz(Dt)/(1000*60/(freq_q/freq_p));
+Dt_temp = decimate(DtOrig(:,1), d_factor, 40, 'FIR');
+Dt = decimate(Dt_temp, 6, 40, 'FIR');
+kWh = trapz(Dt)/(1000*60/(d_factor*6));
 
 
 
@@ -75,43 +77,10 @@ kWh = kWhOrig;%trapz(Dt)/(1000*60/(freq_q/freq_p));
 mp = kWh(1);
 m = ones(P, 1) * mp;
 
-mp2 = kWh(2); 
-m(P/2+1:P) = mp2;
+%mp2 = kWh(2); 
+%m(P/2+1:P) = mp2;
 
-% Dt(1:168) = [0.18	0.18	0.18	0.18	0.18	0.66 ...
-%  0.66	0.18	0.18	0.18	0.30	0.30 ...
-%  0.20	0.31	0.36	0.18	0.28	0.28 ...
-%  0.47	0.45	0.39	0.28	0.18	0.18 ...
-%  0.18	0.18	0.18	0.18	0.18	0.66 ...
-%  0.66	0.18	0.18	0.18	0.30	0.30 ...
-%  0.20	0.31	0.36	0.18	0.28	0.28 ...
-%  0.47	0.45	0.39	0.28	0.18	0.18 ...
-%  0.18	0.18	0.18	0.18	0.18	0.66 ...
-%  0.66	0.18	0.18	0.18	0.30	0.30 ...
-%  0.20	0.31	0.36	0.18	0.28	0.28 ...
-%  0.47	0.45	0.39	0.28	0.18	0.18 ...
-%  0.18	0.18	0.18	0.18	0.18	0.66 ...
-%  0.66	0.18	0.18	0.18	0.30	0.30 ...
-%  0.20	0.31	0.36	0.18	0.28	0.28 ...
-%  0.47	0.45	0.39	0.28	0.18	0.18 ...
-%  0.18	0.18	0.18	0.18	0.18	0.66 ...
-%  0.66	0.18	0.18	0.18	0.30	0.30 ...
-%  0.20	0.31	0.36	0.18	0.28	0.28 ...
-%  0.47	0.45	0.39	0.28	0.18	0.18 ...
-%  0.18	0.18	0.18	0.18	0.18	0.66 ...
-%  0.66	0.18	0.18	0.18	0.30	0.30 ...
-%  0.20	0.31	0.36	0.18	0.28	0.28 ...
-%  0.47	0.45	0.39	0.28	0.18	0.18 ...
-%  0.18	0.18	0.18	0.18	0.18	0.66 ...
-%  0.66	0.18	0.18	0.18	0.30	0.30 ...
-%  0.20	0.31	0.36	0.18	0.28	0.28 ...
-%  0.47	0.45	0.39	0.28	0.18	0.18];
-% 
-% Dt = repmat(Dt',1,2);
-
-%valCoeffBase = 0.5*N*max(Dt)/(min(Dt)*9.*sqrt(var(Dt)));%*2.5*mean(Dt)); % valor empirico asociado a la valoracion que dan los usuarios al recurso en una hora determinada.
-%valCoeffBase = N*max(Dt)/(5*min(Dt));%*2.5*mean(Dt)); 
-valCoeff = 20;%valCoeffBase;%-2; 110 w/inc, 60 w/o inc
+valCoeff = 20;%valCoeffBase;%-2; 110 w/inc, 60 w/o inc. valor empirico asociado a la valoracion que dan los usuarios al recurso en una hora determinada.
 
 %Minimum energy consumption for all users during a time lapse.
 
@@ -126,27 +95,21 @@ T_ = length(Dt); % should be any value and work normal as well.
 
 % valuation parameters of all agents
 % valoracion heterogenea entre poblaciones
-alpha_ef = zeros(N,T_);
-for i=1:N/2
+alpha_ef = zeros(P,T_);
+for i=1:P %P/2
     alpha_ef(i,:) = pt(1:T_,1);%*(1+.5*i/N*0) + 0.*rand(1.T_);
 end
 
 %pt = Dt./max(Dt)*(valCoeff+2); para cambiar la valoración por grupos de
 %usuarios
 
-for i=(N/2+1):N
-    alpha_ef(i,:) = pt(1:T_,2);%*(1+.5*i/N*0) + 0.*rand(1.T_);
-end
+%for i=(P/2+1):P
+%    alpha_ef(i,:) = pt(1:T_,2);%*(1+.5*i/N*0) + 0.*rand(1.T_);
+%end
 
 % parametros de la func. de costo agregado
 beta_ef = 2;
 b = 0;
-
-% Time of the activation of either incentives or attacks IS NOT doing
-% anything in the code
-%time_on = 2;
-%time_off = 4;
-
 
 % number of pure strategies per population
 n = T_+1;%(24*7)+1;%25 % MC. Energia . o potencia? que se distribuye entre los agentes. por cada poblacion.
@@ -155,58 +118,62 @@ n = T_+1;%(24*7)+1;%25 % MC. Energia . o potencia? que se distribuye entre los a
 time = 30;
 
 % initial condition
-pot=ones(N,T_+1)/(1*(T_+1));
+pot=ones(P,T_+1)/(1*(T_+1));
 
 %pot(:,1:T_) = repmat(Dt,N,1);%
-x0 = pot;
+x0 = pot(1,:); %take 1 population
 
 % structure with the parameters of the game
-G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode45', 'time', time, 'tol', 0.00001, 'x0', x0, 'm', m);
+%G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode45', 'time', time, 'tol', 0.00001, 'x0', x0, 'm', m);
 
 % random initial condition
 %G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode45', 'time', time, 'tol', 0.000001, 'm', m);
 
+%% discrete
+
+% mass of the population
+%m = 1;
+
+% initial condition
+%x0 = [0.2 0.7 0.1]; 
+
+% simulation parameters
+iterations = 10000;
+
+
+% structure with the parameters of the game
+G = struct('N', N, 'n', n, 'f', @fitness_user_finite, 'x0', x0, 'ode', 'ode113', 'time', iterations, 'eta', 0.02, 'revision_protocol', @proportional_imitation);
+
+G.R = 1;
+
 % verify data of the game
 G = definition(G);
 
-G.step = .01;
-G.eta = .02;
+
+G.revision_protocol = @proportional_imitation;
+G.run_finite();
+G.graph()
+G.graph_evolution()
+%G.graph_fitness()
+
+
+
+%% continues standard
+
+
+
+
+% verify data of the game
+%G = definition(G);
+
+%G.step = .01;
+%G.eta = .02;
 
 % run dynamics
-G.dynamics = {'rd'};
-G.run()
-T_rd = G.T;
-X_rd = G.X;
-
-% G.dynamics = {'bnn'};
+% G.dynamics = {'rd'};
 % G.run()
-% T_bnn = G.T;
-% X_bnn = G.X;
-% 
-% 
-% G.dynamics = {'smith'};
-% G.run()
-% T_smith = G.T;
-% X_smith = G.X;
-
-
-% % extract matrix of strategies
-% %n = max(G.S);
-% x_n = vec2mat(X_dyn(end. :). n);
-% x = zeros(G.P. n);
-% 
-% for p = 1 : G.P
-%     x(p. :) = x_n(p. :) * G.m(p);
-% end
-% 
-% U = utility(x);
-% 
-%pause
-
-% G.dynamics = {'logit'};
-% G.run()
-% T_logit = G.T;
-% X_logit = G.X;
+% T_rd = G.T;
+% X_rd = G.X;
 
 
 
@@ -243,7 +210,7 @@ titPower = strcat('Power allocation in the society [kW]');%, % addcost: ', num2s
 xlabel('Time [min]') % x-axis label
 ylabel(titPower) % y-axis label
 legend('Final allocation','Starting allocation')
-nameP = strcat('power',netType,num2str(N),social_incentives);
+nameP = strcat('power',netType,num2str(P),social_incentives);
 %hold on
 %    plot(1:1:T_, sum_x0(1:T_,1))
 savefig(4, nameP, 'compact');
@@ -264,7 +231,7 @@ disp(['Available total energy: ' num2str(sum(m)) ' kWh']);
 disp(['Energy use ratio: ' num2str(total_resources_alloc/sum(m))]);
 
 figure(7)
-iter= 1:N;
+iter= 1:P;
 plot(iter,theta, iter, w, iter, s)
 legend('susceptibility','self-conf','i.c.','Location','NorthEastOutside')
 xlabel('Users');
