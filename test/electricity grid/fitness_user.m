@@ -2,22 +2,21 @@ function F = fitness_user(x, p)
 
 global beta_ef alpha_ef mp addcost T_ q_min op
 
+index = p;
+n = 3; %T_+1; %debe coincidir con la definición de la variable en test_RA.m
 power = x;
-F = zeros(T_+1,1);
+F = zeros(n,1); %T_+1,1);
 
 %addcost es un porcentaje de costo agregado en forma de incentivos
 %negativos (mayor costo,menor utilidad) para los agentes con un perfil de  
 %consumo mayor.
 
-addcostPU = addcost/100; % normalizar
-
-index = p;
-n = T_+1; %debe coincidir con la definición de la variable en test_RA.m
+%addcostPU = addcost/100; % normalizar
 
 r_base = ones(1,T_)/T_; %debe sumar 1;
 r = r_base*mp;
 
-for l = 1 : T_
+for l = 1 : n-1
     q_t = power(index, l);
     sum_q = sum( power(:, l) );
     alpha = alpha_ef(index, l);

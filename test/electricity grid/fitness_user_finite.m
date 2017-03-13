@@ -1,30 +1,35 @@
-function F = fitness_user_finite(x, p)
+function F = fitness_user_finite(Q,Prefs,T_)
+% input:
+% Q = population state (power consumption) (G.N,G.P)
+% Prefs = 3D Matrix of preferences for users, of size (G.N, T_, G.P)
+% T_ = number of periods for the secuence of games.
+% output:
+% F = payoff for each agent according to its strategy, for all agents in a
+% period T_. Size (G.N,G.P)
 
-global beta_ef alpha_ef mp addcost T_ q_min op
+global beta_ef alpha_ef mp op
 
-power = x;
-F = zeros(T_+1,1);
+power = Q;
+theta = Prefs;
+%n = 3; %debe coincidir con la definición de la variable en test_RA.m
+F = zeros(size(Q)); % puede ser diferente para cada agente que juega una estrategia particular, para cada población.
 
 %addcost es un porcentaje de costo agregado en forma de incentivos
 %negativos (mayor costo,menor utilidad) para los agentes con un perfil de  
 %consumo mayor.
 
-index = p;
-n = T_+1; %debe coincidir con la definición de la variable en test_RA.m
+popul = size(Q,2);
 
-r_base = ones(1,T_)/T_; %debe sumar 1;
-r = r_base*mp;
+%r_base = ones(1,(n-1))/(n-1); %debe sumar 1;
+%r = r_base*mp;
+f = 2; %factor de preferencia, cuántas veces por encima del costo unitario valora cada persona una unidad de energia consumida
 
-for l = 1 : T_
-    q_t = power(index, l);
-    sum_q = sum( power(:, l) );
-    alpha = alpha_ef(index, l);
-    
-    F(l) = (alpha/(1+q_t))*(1 + op(index)*(r(l) - q_t)/q_t) - 2*beta_ef*(sum_q);
-  
+sumQ = sum( sum(power) );
+beta = unit_cost(sumQ);
+
+for p = 1 : popul
+        
+    F(:,popul) = beta*(f*theta(:,T_,p)-1);
+    %(1 + op(index)*(r(l) - q_t)/q_t)  
 end
-
-
-F(n) = 0;
-
 

@@ -1,4 +1,4 @@
-function s_i = pairwise_comparison(F, z, s, i, p)
+function s_i = pairwise_comparison(F, s, i, p, Prefs) % (F, z, s, i, p)
 % PAIRWISE_COMPARISON Computes the differece equation that describes the update
 %         of the populations' state following the pairwise comparison revision
 %         protocol. This revision protocol leads to the Smith dynamics with
@@ -26,8 +26,15 @@ global G
 
 j = unidrnd( G.S(p) );
 
-pi_i = F( s(i) );
-pi_j = F( j );
+pi_i = F(i,p);
+
+s_try = s;
+s_try(i,p) = j;
+Q_try = power_state(s_try);
+beta = unit_cost(sum(sum(Q_try)));
+theta = Prefs(i,G.period,p);
+
+pi_j = fitness_user_finite_i(beta, theta);
 
 rho_ij = max(pi_j - pi_i, 0);
 

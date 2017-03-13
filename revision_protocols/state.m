@@ -3,9 +3,10 @@ function z = state(s)
 % 
 % SYNOPSIS: z = STATE(s)
 % 
-% INPUT s: Vector with the strategy of each agent
+% INPUT s: Vector with the strategy of each agent. //Matrix with the
+% strategy of each agent for all populations.
 %       
-% OUTPUT z: Vector with the social state
+% OUTPUT z: Vector with the social state //Matrix with the social state
 %
 % SEE ALSO definition, run_game_finite_population, comparison2average, 
 %          logit_choice, pairwise_comparison, proportional_imitation
@@ -18,9 +19,10 @@ function z = state(s)
 global G
 
 % find the current social state 
-z = zeros(1, G.S(1));
+z = zeros(max(G.S), G.P);
 
-for i = 1: G.S(1)
-    z(i) = sum(s == i) / G.N;
+for a = 1:G.P
+    for i = 1: max(G.S)
+        z(i,a) = sum(s(:,a) == i) / G.N;
+    end
 end
-

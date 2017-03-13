@@ -5,129 +5,57 @@ clear
 
 close all
 
-global G beta_ef alpha_ef time_on time_off N T_ hybrid b q_min valCoeff addcost op mp
+global G beta_ef alpha_ef time_on time_off N T_ hybrid b q_min valCoeff addcost op mp devices
 
 %number of populations (consumers, households)
-P = 5;
+P = 10;
 addcost = 0;
 
-step_1_graph
+step_1_graph % graph network generation, for the user's opinions interaction
 
-s = linspace(1,0.2,P);% %zeros(N,1)initial beliefs of users
-tMax = 1e3; %Max. iterations for op dynamics
-c_eps = 1e-4;%1e-6; error aceptable para la convergencia
-%opEps = 0.4; Bounded confidence parameter for HK op dyn model
+step_2_opdyn % opinion dynamics
 
-%% susceptibility (1-stubborness) theta of the agents
-theta = (1-(logspace(0, 3, P)/1000))';%column vector of susceptibility
-%define self confidence
-w1 = logspace(0, 3, P)/1000;
-w2 = fliplr(w1);
-w = (w1+w2)/2;
-w = w';
-%fprintf(1,'å: %3.2f\n', opEps);   
-%[~, opinion] = hkLocal(A, s, opEps, tMax, c_eps, 'plot');
-
-opinion = bullo2(s,P,Aw,theta,tMax,w, c_eps, 'plot');
-
-social_incentives = 'none';
-switch social_incentives
-    case 'sInc'
-        op = opinion(:,end); %zeros(1,T_);%
-        
-    otherwise
-        op = zeros(P,1); %No use of social incentives
-        social_incentives = 'noneInc';
-end
-
-
-
-%save('Caso1.mat','Gw','opinion'); 
+devices = xls2struct('devices.xlsx'); %cargar los aparatos que tienen las casas de cada usuario.
 
 %% Everything else
 % number of agents per population (devices)
-N = 7;
+N = 6;
 
 %Example consumption daily profile, constructed starting from total energy consumption
 %historical data, in kWh
-xlRange = 'A:B';
-DtOrig = xlsread('PerfilConsumoEjemplo.xlsx','Gen',xlRange); %load weekly profile from Excel, with minute-resolution
+%xlRange = 'A:B';
+%DtOrig = xlsread('PerfilConsumoEjemplo.xlsx','Gen',xlRange); %load weekly profile from Excel, with minute-resolution
 
-kWhOrig = trapz(DtOrig)/(1000*60);%original signal has minute resolution, and energy is measured in kWh
+%kWhOrig = trapz(DtOrig)/(1000*60);%original signal has minute resolution, and energy is measured in kWh
 %freq_p=1;
 %freq_q=5;
-d_factor = 10;
+%d_factor = 10;
 
-%tx = 1:1:length(DtOrig);
-%tz = 1:d_factor:length(DtOrig);
+% tx = 1:1:length(DtOrig);
+% tz = 1:d_factor*6:length(DtOrig);
 
-%Dt = resample(DtOrig,tx,'pchip');
-Dt_temp = decimate(DtOrig(:,1), d_factor, 40, 'FIR');
-Dt = decimate(Dt_temp, 6, 40, 'FIR');
-kWh = trapz(Dt)/(1000*60/(d_factor*6));
+%Dt_temp = decimate(DtOrig(:,1), d_factor, 40, 'FIR');
+%Dt = decimate(Dt_temp, 6, 40, 'FIR');
+%kWh = trapz(Dt)/(1000*60/(d_factor*6));
 
-
-
-%figure();
-%plot(tx,DtOrig(:,1),'+-',tz,Dt(:,1),'o:')
-%legend('original','resampled')
+% figure();
+% plot(tx,DtOrig(:,1),'+-',tz,Dt(:,1),'o:')
+% legend('original','resampled')
 
 
-% mass of the populations -- allocated resources?
-mp = kWh(1);
-m = ones(P, 1) * mp;
+%% Users preferences
+T_ = 48; %weekly period with hourly resolution.
+Prefs = randi([0 1], N,T_,G.P);
 
-%mp2 = kWh(2); 
-%m(P/2+1:P) = mp2;
-
-valCoeff = 20;%valCoeffBase;%-2; 110 w/inc, 60 w/o inc. valor empirico asociado a la valoracion que dan los usuarios al recurso en una hora determinada.
-
-%Minimum energy consumption for all users during a time lapse.
-
-%q_min is a matriz of (N, T_+1)
-q_min = repmat(((mean((min(Dt))/1000)./m)), 1,T_+1);%.12. Value in p.u, first converted to kW, then normalized with the pop mass
-
-
-pt = Dt./max(Dt)*valCoeff; %TODO: Analize pt and effect of coefficients in population stable state.
-
-% number of strategies
-T_ = length(Dt); % should be any value and work normal as well.
-
-% valuation parameters of all agents
-% valoracion heterogenea entre poblaciones
-alpha_ef = zeros(P,T_);
-for i=1:P %P/2
-    alpha_ef(i,:) = pt(1:T_,1);%*(1+.5*i/N*0) + 0.*rand(1.T_);
-end
-
-%pt = Dt./max(Dt)*(valCoeff+2); para cambiar la valoración por grupos de
-%usuarios
-
-%for i=(P/2+1):P
-%    alpha_ef(i,:) = pt(1:T_,2);%*(1+.5*i/N*0) + 0.*rand(1.T_);
-%end
+%% Stuff
 
 % parametros de la func. de costo agregado
-beta_ef = 2;
+beta_ef = 450;
 b = 0;
 
 % number of pure strategies per population
-n = T_+1;%(24*7)+1;%25 % MC. Energia . o potencia? que se distribuye entre los agentes. por cada poblacion.
+n = 2; %T_+1;%(24*7)+1;%25
 
-% simulation parameters
-time = 30;
-
-% initial condition
-pot=ones(P,T_+1)/(1*(T_+1));
-
-%pot(:,1:T_) = repmat(Dt,N,1);%
-x0 = pot(1,:); %take 1 population
-
-% structure with the parameters of the game
-%G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode45', 'time', time, 'tol', 0.00001, 'x0', x0, 'm', m);
-
-% random initial condition
-%G = struct('P', P, 'n', n, 'f', @fitness_user, 'ode', 'ode45', 'time', time, 'tol', 0.000001, 'm', m);
 
 %% discrete
 
@@ -138,11 +66,11 @@ x0 = pot(1,:); %take 1 population
 %x0 = [0.2 0.7 0.1]; 
 
 % simulation parameters
-iterations = 10000;
+iterations = 200;
 
 
 % structure with the parameters of the game
-G = struct('N', N, 'n', n, 'f', @fitness_user_finite, 'x0', x0, 'ode', 'ode113', 'time', iterations, 'eta', 0.02, 'revision_protocol', @proportional_imitation);
+G = struct('P', P, 'N', N, 'n', n, 'f', @fitness_user_finite, 'time', iterations, 'eta', 0.02, 'revision_protocol', @pairwise_comparison);
 
 G.R = 1;
 
@@ -150,18 +78,27 @@ G.R = 1;
 G = definition(G);
 
 
-G.revision_protocol = @proportional_imitation;
+
+G.T_ = T_; %assign run periods to the ciclic game.
+G.Prefs = Prefs; %users' preferences for each period.
+
+Qm = zeros(T_,1);
+for run = 1:G.T_
+G.period = run; %first period
 G.run_finite();
-G.graph()
-G.graph_evolution()
+%G.graph()
+%G.graph_evolution()
 %G.graph_fitness()
+Qm(run) = sum(G.Q(run,:))/1000;
 
 
+end
 
 %% continues standard
 
 
-
+Q_e = reshape(G.Q(end,:), [G.N,G.P]);
+Q_s = reshape(G.Q(1,:), [G.N,G.P]);
 
 % verify data of the game
 %G = definition(G);
@@ -179,60 +116,56 @@ G.graph_evolution()
 
 % extract matrix of strategies. 
 %MC. A strategy to make a consumption in a specific time t.
-x_n = vec2mat(G.X(end, :), n);
-x = zeros(G.P, n);
-for p = 1 : G.P
-    x(p, :) = x_n(p, :) * G.m(p);
-end
-%U = utility(x);
+%x_n = vec2mat(G.X(end, :), n);
 
-%figure(3);
-%clf
-%plot(1:1:T_, U(1,1:T_))
-%tit = strcat('Utility per population, % addcost: ', num2str(addcost));
-%title(tit)
-%name = strcat('utility','%',num2str(addcost));
-%savefig(3, name, 'compact');
 
-%% sumas de potencia para graficar
-sum_x = zeros(T_,1);
-sum_x0 = zeros(T_,1);
-for i=1:(T_)
-    sum_x(i) = sum( x(:, i) );
-    sum_x0(i) = sum( mp*x0(:,i));
-end
+
+figure(1)
+timem = 1:T_;
+plot(timem,Qm)
+xlabel('iterations');
+ylabel('Total consumption in the society [kWh]')
+
 
 figure(4); 
 clf
-plot(1:1:T_, sum_x(1:T_,1), 1:1:T_, sum_x0(1:T_,1))
-titPower = strcat('Power allocation in the society [kW]');%, % addcost: ', num2str(addcost));
+bar(Q_e,'DisplayName','Q_e')
+titPower = strcat('Final Power allocation per user per device [W]');%, % addcost: ', num2str(addcost));
 %title(titPower)
-xlabel('Time [min]') % x-axis label
+xlabel('Device') % x-axis label
 ylabel(titPower) % y-axis label
-legend('Final allocation','Starting allocation')
-nameP = strcat('power',netType,num2str(P),social_incentives);
-%hold on
-%    plot(1:1:T_, sum_x0(1:T_,1))
-savefig(4, nameP, 'compact');
+legend('show', 'Location','northeastoutside')
+
+figure(5); 
+clf
+bar(Q_s,'DisplayName','Q_s')
+titPower = strcat('Starting Power allocation per user per device [W]');%, % addcost: ', num2str(addcost));
+%title(titPower)
+xlabel('Device') % x-axis label
+ylabel(titPower) % y-axis label
+legend('show', 'Location','northeastoutside')
 
 
-%% Resource allocation verification test
-resources_alloc_pu = zeros(G.P,1);
-resources_allocated = zeros(G.P,1);
-for count = 1 : G.P
-    resources_alloc_pu(count,1) = sum(x_n(count,1:T_));
-    resources_allocated(count,1)= sum(x(count,1:T_));
+
+%nameP = strcat('power',netType,num2str(P),social_incentives);
+%savefig(4, nameP, 'compact');
+
+
+%disp(['Energy use ratio: ' num2str(total_resources_alloc/sum(m))]);
+timeQ = 1:length(G.Q);
+for i= timeQ
+     Qavg(i) = sum(G.Q(i,:))/1000;
 end
 
-resources_alloc_pu
-total_resources_alloc = sum(resources_allocated);
-disp(['Allocated total energy: ' num2str(total_resources_alloc) ' kWh']);
-disp(['Available total energy: ' num2str(sum(m)) ' kWh']);
-disp(['Energy use ratio: ' num2str(total_resources_alloc/sum(m))]);
+figure(6)
+plot(timeQ,Qavg)
+xlabel('iterations');
+ylabel('Total consumption in the society [kWh]')
+
 
 figure(7)
 iter= 1:P;
-plot(iter,theta, iter, w, iter, s)
+plot(iter,theta, iter, w, iter, susceptibility)
 legend('susceptibility','self-conf','i.c.','Location','NorthEastOutside')
 xlabel('Users');
 ylabel('Parameter value')

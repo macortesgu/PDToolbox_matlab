@@ -1,4 +1,4 @@
-function s_i = proportional_imitation(F, z, s, i, p)
+function s_i = proportional_imitation(F, s, i, p, ~) % (F, z, s, i, p)
 % PROPORTIONAL_IMITATION Computes the differece equation that describes the
 %         update of the populations' state following the pairwise proportional
 %         imitation revision protocol. This revision protocol leads to the
@@ -26,8 +26,8 @@ global G
 
 j = unidrnd( G.N );
 
-pi_i = F( s(i) );
-pi_j = F( s(j) );
+pi_i = F(i,p);
+pi_j = F(j,p);
 
 rho_ij =  max(pi_j - pi_i, 0);
 
