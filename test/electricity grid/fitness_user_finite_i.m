@@ -13,6 +13,6 @@ function F = fitness_user_finite_i(theta,beta)
 %r = r_base*mp;
 f = 2; %factor de preferencia, cuántas veces por encima del costo unitario valora cada persona una unidad de energia consumida
 
-F = beta*(f*theta - 1);
+F = max(beta*(f*theta - 1),0);
     %(1 + op(index)*(r(l) - q_t)/q_t)  
 

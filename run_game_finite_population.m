@@ -60,6 +60,7 @@ t_max = floor(G.time);
 T = 1:1:t_max;
 X = zeros( t_max, G.P*max(G.S));
 QT = zeros(t_max, G.N*G.P);
+Fitness = zeros(t_max, G.N*G.P);
 
 % Number of agents that update their strategy at each time instant, for
 % each population
@@ -100,7 +101,7 @@ for t = 1: t_max
     
     %X(t, :) = x(:)';
     QT(t,:) = Q(:)';
-    
+    Fitness(t,:) = F(:)';
     
     
     
@@ -117,7 +118,7 @@ end
 %G.X = X;
 G.T = T;
 G.Q = QT;
-
+G.F = Fitness;
 
 % save changes on the structure in the workspace
 assignin('base', name, G);

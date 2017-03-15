@@ -175,7 +175,7 @@ if isfield(G, 'R') == 0
 end
 
 if isfield(G, 'N') == 0
-    G.R = 100;
+    G.N = 100;
 end
 
 if isfield(G, 'verb') == 0

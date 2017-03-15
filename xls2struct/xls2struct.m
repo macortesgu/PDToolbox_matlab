@@ -122,7 +122,7 @@ for varInd=1:numVars
         
     else
         %this column only contains numbers, use arrays        
-        varData=num(:,varInd);
+        varData=num(:,numColInd);
         numColInd=numColInd+1;
                
         if(flag)
