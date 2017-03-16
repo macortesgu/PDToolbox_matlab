@@ -46,7 +46,7 @@ step_2_opdyn % opinion dynamics
 
 
 %% Users preferences
-T_ = 7; %weekly period with hourly resolution.
+T_ = 168*2; %weekly period with hourly resolution.
 Tperf = 10080;
 PrefsOrig = zeros(N,Tperf,P);%randi([0 1], N,T_,P);
 Perfiles = Perfcas2(P,1);
@@ -65,18 +65,46 @@ for i=1:length(devices.id)
 end
 
 %Undersampling of the profiles, to match game runtime periods.
+
 factor = Tperf/T_;
-Prefs = pUndersample(PrefsOrig, factor);
 
+if(factor==1)
+    sw = 1;
+else
+    if (factor > 1) && (factor<=12)
+        sw = 2;
+    else
+        if (factor > 12) && (factor<=120)
+            sw = 3;
+        end
+    end
+end
 
-
-length(nonzeros(PrefsOrig(1,:,1)))
-length(nonzeros(Prefs(1,:,1)))*factor
-
-
-       
-%      PrefsTemp(dev,:,u) = decimate(PrefsOrig(dev,:,u), d_factor1, 40, 'FIR');
-%  Prefs(dev,:,u) = decimate(PrefsTemp(dev,:,u), d_factor2, 40, 'FIR');    
+switch sw
+    case 1
+        Prefs = PrefsOrig;
+    case 2
+        d_factor = factor;
+        for dev = 1:N
+            for u = 1:P
+                Prefs(dev,:,u) = decimate(PrefsOrig(dev,:,u), d_factor, 40, 'FIR');
+            end
+        end
+    case 3
+        d_factor1 = 10;
+        d_factor2 = factor/d_factor1;
+        PrefsTemp = zeros(N,Tperf/d_factor1,P);
+        Prefs = zeros(N,T_,P);
+        for dev = 1:N
+            for u = 1:P
+                PrefsTemp(dev,:,u) = decimate(PrefsOrig(dev,:,u), d_factor1, 40, 'FIR');
+                Prefs(dev,:,u) = decimate(PrefsTemp(dev,:,u), d_factor2, 40, 'FIR');
+            end
+        end
+    otherwise
+        Prefs = PrefsOrig;
+        error('Los periodos seleccionados son muy pocos')
+end
 
 
 %% Stuff
@@ -132,7 +160,7 @@ end
 Q_e = reshape(G.Q(end,:), [G.N,G.P]);
 Q_s = reshape(G.Q(1,:), [G.N,G.P]);
 
-user = 10;
+user = 9;
 for t = 1:G.time
 FitEvo(t,1:G.N) = G.F(t,user*(1:G.N));
 end
@@ -150,7 +178,7 @@ labelperiods  = periodClass(T_);
 
 figure(1)
 timem = 1:T_;
-plot(timem,Qm)
+stem(timem,Qm)
 xlabel(labelperiods);
 ylabel('Total consumption in the society [kWh]')
 

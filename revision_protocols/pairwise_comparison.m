@@ -22,7 +22,7 @@ function s_i = pairwise_comparison(F, s, i, p, Prefs) % (F, z, s, i, p)
 % 
 % Carlos Barreto, 04-11-16 
 
-global G
+global G devices
 
 j = unidrnd( G.S(p) );
 
@@ -31,10 +31,12 @@ pi_i = F(i,p);
 s_try = s;
 s_try(i,p) = j;
 Q_try = power_state(s_try);
-beta = unit_cost(sum(sum(Q_try)));
+sumQtry = sum(sum(Q_try));
+beta = unit_cost(sumQtry);
 theta = Prefs(i,G.period,p);
+Qj = devices.power(i)*(s_try(i,p)-1);%Power consumption for device i wether it is on or off
 
-pi_j = fitness_user_finite_i(beta, theta);
+pi_j = fitness_user_finite_i(beta, theta, sumQtry, Qj);
 
 rho_ij = max(pi_j - pi_i, 0);
 

@@ -29,7 +29,10 @@ beta = unit_cost(sumQ);
 
 for p = 1 : popul
         
-    F(:,popul) = max(beta*(f*theta(:,T_,p)-1),0);
+    %F(:,popul) = max(beta*(f*theta(:,T_,p)-1),0);
     %(1 + op(index)*(r(l) - q_t)/q_t)  
+    F(:,popul) = max((beta*f*theta(:,T_,p)./(1+Q(:,p))) - 2*beta*(sumQ),0);
+
+    
 end
 
