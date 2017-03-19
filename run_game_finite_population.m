@@ -16,6 +16,9 @@ function run_game_finite_population(name)
 % For more information see: <a href="https://github.com/carlobar/PDToolbox_matlab/">the GitHub's repository.</a>
 % 
 % Carlos Barreto, 04-11-16 
+%
+% Modified to run multipopulation games with finite number of agents, N.
+% Mateo Cortés, March 2017.
 
 global G
 
@@ -30,35 +33,35 @@ if G.verb == true
     tic
 end
 
-s = zeros(G.N, G.P); %strategy matrix. Each col is a population
+s = ones(G.N, G.P); %strategy matrix. Each col is a population. Ones means all agents off.
 
 % calculate the initial strategy of each agent given the proportions in x0
 
 
-for a = 1: G.P % for all populations. Current population is 'a'
-  h = 0;  
-    for i = 1: max(G.S(a))
-        p = floor(G.N * G.x0(a, i));
-        if ((p + h) <= G.N) && (p ~= 0)
-            s(h + 1: h + p, a) = i;
-            h = h + p;
-        end
+%for a = 1: G.P % for all populations. Current population is 'a'
+%  h = 0;  
+%    for i = 1: max(G.S(a))
+%        p = floor(G.N * G.x0(a, i));
+%        if ((p + h) <= G.N) && (p ~= 0)
+%            s(h + 1: h + p, a) = i;
+%            h = h + p;
+%        end
         
-    end 
-end
+%    end 
+%end
 
 % choose a random strategy to complete the initial state vector
-for a = 1: G.P
-    if h ~= G.N
-        s(h + 1: G.N, a) = unidrnd(G.S(a), 1, G.N - h);
-    end
-end
+%for a = 1: G.P
+%    if h ~= G.N
+%        s(h + 1: G.N, a) = unidrnd(G.S(a), 1, G.N - h);
+%    end
+%end
 
 % set the number of iterations
 t_max = floor(G.time);
     
 T = 1:1:t_max;
-X = zeros( t_max, G.P*max(G.S));
+%X = zeros( t_max, G.P*max(G.S));
 QT = zeros(t_max, G.N*G.P);
 Fitness = zeros(t_max, G.N*G.P);
 
@@ -81,7 +84,7 @@ for t = 1: t_max
     
     % find the current payoff of each strategy
     %F = zeros(G.S(1), a) ;
-    F= G.f(Q, G.Prefs, G.period); %f(x, a);
+    F = G.f(s, Q, G.Prefs, G.period) %f(x, a);
     
     %update_agents = zeros(G.P,1);
     for a = 1: G.P
@@ -89,15 +92,16 @@ for t = 1: t_max
         update_agents = unidrnd(G.N, 1, alarm(a,t));
         
         % procedure to update the strategy of each agent
+        s_update = s;
         for k=1 : alarm(a,t)
             i = update_agents(k);
-            s_update = s;
+
             s_update(i,a) = G.revision_protocol(F, s, i, a, G.Prefs); %(F(i,a), x, s, i, a)
         end
-        
+         s = s_update   
     end
     
-    s = s_update;
+
     
     %X(t, :) = x(:)';
     QT(t,:) = Q(:)';

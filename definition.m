@@ -167,7 +167,7 @@ end
 % decide if the fitness function returns the fitness of a single population
 % or the fitness of the whole society
 if isfield(G,'pop_wise') == 0
-    G.pop_wise = true;
+    G.pop_wise = true; %true returns fitness of whole society
 end
 
 if isfield(G, 'R') == 0

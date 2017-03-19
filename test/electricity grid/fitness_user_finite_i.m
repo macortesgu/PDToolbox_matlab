@@ -1,4 +1,4 @@
-function F = fitness_user_finite_i(theta,beta, sumQtry, Q)
+function F = fitness_user_finite_i(preferred_choice,beta,Q)
 
 % input:
 % Q = population state (power consumption) (G.N,G.P)
@@ -13,7 +13,7 @@ function F = fitness_user_finite_i(theta,beta, sumQtry, Q)
 %r = r_base*mp;
 f = 2; %factor de preferencia, cuántas veces por encima del costo unitario valora cada persona una unidad de energia consumida
 
-F = max(beta*(f*theta - 1),0);
-F = max((beta*f*theta/(1+Q)) - 2*beta*(sumQtry),0);
+%F = max(beta*(f*theta - 1),0);
+F = (beta*f*preferred_choice*((Q/1000)+1)) - beta*(Q/1000);
     %(1 + op(index)*(r(l) - q_t)/q_t)  
 

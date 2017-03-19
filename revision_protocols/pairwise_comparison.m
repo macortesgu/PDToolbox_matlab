@@ -24,7 +24,15 @@ function s_i = pairwise_comparison(F, s, i, p, Prefs) % (F, z, s, i, p)
 
 global G devices
 
-j = unidrnd( G.S(p) );
+%j = unidrnd( G.S(p) );
+
+if s(i,p) == 1 %aparato apagado
+    j = 2;
+else 
+    if (s(i,p) == 2)%aparato prendido
+        j = 1;
+    end
+end
 
 pi_i = F(i,p);
 
@@ -35,17 +43,18 @@ sumQtry = sum(sum(Q_try));
 beta = unit_cost(sumQtry);
 theta = Prefs(i,G.period,p);
 Qj = devices.power(i)*(s_try(i,p)-1);%Power consumption for device i wether it is on or off
+preferred_choice = eq(theta,s_try(i,p)-1);
 
-pi_j = fitness_user_finite_i(beta, theta, sumQtry, Qj);
+pi_j = fitness_user_finite_i(preferred_choice,beta,Qj);
 
-rho_ij = max(pi_j - pi_i, 0);
+rho_ij = max(pi_j - pi_i, 0)/1000;
 
 % prob generator
-change = ceil(rand - 1 + rho_ij / G.R);
+change = 1 & rho_ij;%ceil(rand - 1 + rho_ij / G.R);
 
-if change == 1
+if change >= 1 %==1
 	s_i = j;
 else
-	s_i = s(i);
+	s_i = s(i,p);
 end
 

@@ -6,50 +6,27 @@ clear
 clc
 
 close all
-
+tic
 global G beta_ef N T_ hybrid b op devices
 
 devices = xls2struct('devices.xlsx'); %cargar los aparatos que tienen las casas de cada usuario.
-
+%load('Prefs.mat');
 %number of populations (consumers, households)
-P = 10;
+P = 4;
 % number of agents per population (devices)
 N = length(devices.id);
 
-step_1_graph % graph network generation, for the user's opinions interaction
+%step_1_graph % graph network generation, for the user's opinions interaction
 
-step_2_opdyn % opinion dynamics
+%step_2_opdyn % opinion dynamics
 
-
-%% Everything else
-
-%Example consumption daily profile, constructed starting from total energy consumption
-%historical data, in kWh
-%xlRange = 'A:B';
-%DtOrig = xlsread('PerfilConsumoEjemplo.xlsx','Gen',xlRange); %load weekly profile from Excel, with minute-resolution
-
-%kWhOrig = trapz(DtOrig)/(1000*60);%original signal has minute resolution, and energy is measured in kWh
-%freq_p=1;
-%freq_q=5;
-%d_factor = 10;
-
-% tx = 1:1:length(DtOrig);
-% tz = 1:d_factor*6:length(DtOrig);
-
-%Dt_temp = decimate(DtOrig(:,1), d_factor, 40, 'FIR');
-%Dt = decimate(Dt_temp, 6, 40, 'FIR');
-%kWh = trapz(Dt)/(1000*60/(d_factor*6));
-
-% figure();
-% plot(tx,DtOrig(:,1),'+-',tz,Dt(:,1),'o:')
-% legend('original','resampled')
 
 
 %% Users preferences
 T_ = 7; %weekly period with hourly resolution.
 Tperf = 10080;
-PrefsOrig = zeros(N,Tperf,P);%randi([0 1], N,T_,P);
-Perfiles = Perfcas2(P,1);
+ PrefsOrig = zeros(N,Tperf,P);%randi([0 1], N,T_,P);
+ Perfiles = Perfcas2(P,1);
 
 for i=1:length(devices.id)
     %update default power definition for each device with data in the
@@ -67,16 +44,10 @@ end
 %Undersampling of the profiles, to match game runtime periods.
 factor = Tperf/T_;
 Prefs = pUndersample(PrefsOrig, factor);
+%save('Prefs','Prefs','PrefsOrig','Perfiles','devices');
 
-
-
-length(nonzeros(PrefsOrig(1,:,1)))
-length(nonzeros(Prefs(1,:,1)))*factor
-
-
-       
-%      PrefsTemp(dev,:,u) = decimate(PrefsOrig(dev,:,u), d_factor1, 40, 'FIR');
-%  Prefs(dev,:,u) = decimate(PrefsTemp(dev,:,u), d_factor2, 40, 'FIR');    
+%length(nonzeros(PrefsOrig(1,:,1)))
+%length(nonzeros(Prefs(1,:,1)))*factor
 
 
 %% Stuff
@@ -95,17 +66,16 @@ n = 2; %T_+1;%(24*7)+1;%25
 %m = 1;
 
 % initial condition
-%x0 = [0.2 0.7 0.1]; 
+x0 = 0; %[0.2 0.7 0.1]; 
 
 % simulation parameters
-iterations = 200;
-
+iterations = 100;
 
 % structure with the parameters of the game
-G = struct('P', P, 'N', N, 'n', n, 'f', @fitness_user_finite, 'time', iterations, 'eta', 0.02, 'revision_protocol', @pairwise_comparison);
+G = struct('P', P, 'N', N, 'n', n, 'pop_wise', 0, 'f', @fitness_user_finite, 'time', iterations, 'eta', 0.02, 'revision_protocol', @pairwise_comparison);
 
-G.R = 1;
-G.pop_wise = 1;
+G.R = 1;% There are as many revisions per iteration as agents are in a population.
+
 
 % verify data of the game
 G = definition(G);
@@ -117,7 +87,7 @@ Qm = zeros(T_,1);
 
 
 for run = 1:G.T_
-G.period = run; %first period
+G.period = run; %present period
 G.run_finite();
 
 Qm(run) = sum(G.Q(end,:))/1000;
@@ -132,7 +102,8 @@ end
 Q_e = reshape(G.Q(end,:), [G.N,G.P]);
 Q_s = reshape(G.Q(1,:), [G.N,G.P]);
 
-user = 10;
+user = 4;
+FitEvo = zeros(G.time,G.N);
 for t = 1:G.time
 FitEvo(t,1:G.N) = G.F(t,user*(1:G.N));
 end
@@ -180,7 +151,8 @@ legend('show', 'Location','northeastoutside')
 
 
 %disp(['Energy use ratio: ' num2str(total_resources_alloc/sum(m))]);
-timeQ = 1:length(G.Q);
+timeQ = 1:size(G.Q,1);
+Qavg = zeros(1,size(G.Q,1));
 for i= timeQ
      Qavg(i) = sum(G.Q(i,:))/1000;
 end
@@ -191,10 +163,21 @@ xlabel('iterations');
 ylabel('Total consumption in the society [kWh]')
 
 
-figure(7)
-iter= 1:P;
-plot(iter,theta, iter, w, iter, susceptibility)
-legend('susceptibility','self-conf','i.c.','Location','NorthEastOutside')
-xlabel('Users');
-ylabel('Parameter value')
-savefig(7, 'parameters', 'compact');
+% figure(7)
+% iter= 1:P;
+% plot(iter,theta, iter, w, iter, susceptibility)
+% legend('susceptibility','self-conf','i.c.','Location','NorthEastOutside')
+% xlabel('Users');
+% ylabel('Parameter value')
+% savefig(7, 'parameters', 'compact');
+disp('Coincide la potencia optima(prefs) con la consumida:')
+PowOpt = zeros(G.P,T_);
+for u = 1:G.P
+    PowOpt(u,:)=squeeze(sum(power_state(Prefs(:,:,u)+1)));
+end
+eq(sum(PowOpt)', Qm*1000)
+
+PotConsumida = Qm*1000
+PotOptima = sum(PowOpt)'
+
+toc
