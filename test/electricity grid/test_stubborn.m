@@ -6,27 +6,29 @@ clear
 clc
 
 close all
-tic
+
 global G beta_ef N T_ hybrid b op devices
 
 devices = xls2struct('devices.xlsx'); %cargar los aparatos que tienen las casas de cada usuario.
 %load('Prefs.mat');
 %number of populations (consumers, households)
-P = 4;
+P = 6;
 % number of agents per population (devices)
 N = length(devices.id);
 
-%step_1_graph % graph network generation, for the user's opinions interaction
+step_1_graph % graph network generation, for the user's opinions interaction
 
-%step_2_opdyn % opinion dynamics
+step_2_opdyn % opinion dynamics
 
 
 
 %% Users preferences
-T_ = 7; %weekly period with hourly resolution.
+T_ = 14;%10080/5; %weekly period with hourly resolution.
 Tperf = 10080;
  PrefsOrig = zeros(N,Tperf,P);%randi([0 1], N,T_,P);
  Perfiles = Perfcas2(P,1);
+ 
+ kWhOrig = sum(Perfiles.Total)/60;
 
 for i=1:length(devices.id)
     %update default power definition for each device with data in the
@@ -83,15 +85,19 @@ G = definition(G);
 G.T_ = T_; %assign run periods to the ciclic game.
 G.Prefs = Prefs; %users' preferences for each period.
 
-Qm = zeros(T_,1);
+Qp = zeros(T_,G.P);
 
-
+tdyn = tic;
 for run = 1:G.T_
 G.period = run; %present period
 G.run_finite();
 
-Qm(run) = sum(G.Q(end,:))/1000;
+Qperiod = reshape(G.Q(end,:),G.N,G.P);
+Qp(run,:) = sum(Qperiod)/1000;
 end
+totaldyn = toc(tdyn);
+disp(['Total elapsed time running pop dynamics: ',num2str(totaldyn),' s'])
+disp(' ')
 %G.graph()
 %G.graph_evolution()
 %G.graph_fitness()
@@ -116,18 +122,43 @@ plot(tfit,FitEvo)
 % extract matrix of strategies. 
 %MC. A strategy to make a consumption in a specific time t.
 %x_n = vec2mat(G.X(end, :), n);
+%% Calculos de potencia por periodo
+timem = 1:T_;
+Qpt = sum(Qp,2);
+
+disp('Coincide la potencia optima(prefs) con la consumida:')
+PowOpt = zeros(G.P,T_);
+for u = 1:G.P
+    PowOpt(u,:)=squeeze(sum(power_state(Prefs(:,:,u)+1)));
+end
+PowOptTotal = sum(PowOpt)/1000';
+
+size(nonzeros(eq(PowOptTotal, round(Qpt*1000))'))
+
 
 labelperiods  = periodClass(T_);
 
-figure(1)
-timem = 1:T_;
-plot(timem,Qm)
+figure(1);
+hold on;
+bar(timem,PowOptTotal,0.8,'FaceColor',[.5 .5 .5]);
+bar(timem,Qpt,0.6,'FaceColor',[.64 .08 .18]);
+
+legend('Inicial','Con incentivos')
 xlabel(labelperiods);
-ylabel('Total consumption in the society [kWh]')
+ylabel('Total consumption in the society [kW]')
+%axis([1 T_ (min(Qpt)-0.1) (max(Qpt)+0.1)])
+%hold on
+%bar(timem,Qpt*0.5)
+hold off
+
+
+kWhSemTotal = sum(Qpt)/(60/factor)
+
+kWh_User = sum(Qp)/(60/factor)
 
 %figure(2)
 
-
+%% Otras graficas
 figure(4); 
 clf
 subplot(2,1,1), bar(Q_e,'DisplayName','Q_e')
@@ -160,7 +191,7 @@ end
 figure(6)
 plot(timeQ,Qavg)
 xlabel('iterations');
-ylabel('Total consumption in the society [kWh]')
+ylabel('Total consumption in the society [kW-period]')
 
 
 % figure(7)
@@ -170,14 +201,8 @@ ylabel('Total consumption in the society [kWh]')
 % xlabel('Users');
 % ylabel('Parameter value')
 % savefig(7, 'parameters', 'compact');
-disp('Coincide la potencia optima(prefs) con la consumida:')
-PowOpt = zeros(G.P,T_);
-for u = 1:G.P
-    PowOpt(u,:)=squeeze(sum(power_state(Prefs(:,:,u)+1)));
-end
-eq(sum(PowOpt)', Qm*1000)
 
-PotConsumida = Qm*1000
-PotOptima = sum(PowOpt)'
 
-toc
+
+PotConsumida = Qpt*1000;
+PotOptima = sum(PowOpt)';

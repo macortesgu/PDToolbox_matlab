@@ -17,7 +17,7 @@ w = w';
 
 opinion = bullo2(susceptibility,P,Aw,theta,tMax,w, c_eps, 'plot');
 
-social_incentives = 'none';
+social_incentives = 'sInc';
 switch social_incentives
     case 'sInc'
         op = opinion(:,end); %zeros(1,T_);%

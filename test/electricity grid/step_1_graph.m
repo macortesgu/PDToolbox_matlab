@@ -32,6 +32,7 @@ Aw = addWeights(A); %add weights to the adjacency matrix, weiths are agents valu
 %% Plot weighted graph
 
 Gw = digraph(Aw);
+figure(20)
 pp = plot(Gw);
 colormap(spring)
 layout(pp,'auto')

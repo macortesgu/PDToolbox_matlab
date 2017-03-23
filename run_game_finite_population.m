@@ -29,7 +29,7 @@ G = evalin('base', name);
 protocol = func2str(G.revision_protocol);
 
 if G.verb == true
-    disp (['Running the ', protocol, ' revision protocol']);
+    disp (['Running the ', protocol, ' revision protocol, period T=',num2str(G.period)]);
     tic
 end
 
@@ -84,7 +84,7 @@ for t = 1: t_max
     
     % find the current payoff of each strategy
     %F = zeros(G.S(1), a) ;
-    F = G.f(s, Q, G.Prefs, G.period) %f(x, a);
+    F = G.f(s, Q, G.Prefs, G.period); %f(x, a);
     
     %update_agents = zeros(G.P,1);
     for a = 1: G.P
@@ -98,7 +98,7 @@ for t = 1: t_max
 
             s_update(i,a) = G.revision_protocol(F, s, i, a, G.Prefs); %(F(i,a), x, s, i, a)
         end
-         s = s_update   
+         s = s_update;   
     end
     
 

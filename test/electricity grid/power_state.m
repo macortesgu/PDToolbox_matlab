@@ -19,5 +19,5 @@ global devices
 %z = zeros(max(G.S), G.P);
 
 devicesState = (s-1) & ones(size(s));
-pow = devices.power;
+pow = repmat(devices.power,1,size(s,2));
 Q =pow.*devicesState;

@@ -43,9 +43,10 @@ sumQtry = sum(sum(Q_try));
 beta = unit_cost(sumQtry);
 theta = Prefs(i,G.period,p);
 Qj = devices.power(i)*(s_try(i,p)-1);%Power consumption for device i wether it is on or off
+
 preferred_choice = eq(theta,s_try(i,p)-1);
 
-pi_j = fitness_user_finite_i(preferred_choice,beta,Qj);
+pi_j = fitness_user_finite_i(preferred_choice,beta,Qj,i,p);%fitness_user_finite_i(preferred_choice,beta,Qj);
 
 rho_ij = max(pi_j - pi_i, 0)/1000;
 
