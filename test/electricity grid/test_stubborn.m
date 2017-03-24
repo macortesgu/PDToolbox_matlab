@@ -194,12 +194,12 @@ xlabel('iterations');
 ylabel('Total consumption in the society [kW-period]')
 
 
-% figure(7)
-% iter= 1:P;
-% plot(iter,theta, iter, w, iter, susceptibility)
-% legend('susceptibility','self-conf','i.c.','Location','NorthEastOutside')
-% xlabel('Users');
-% ylabel('Parameter value')
+figure(7)
+iter= 1:P;
+plot(iter,theta, iter, w, iter, initial_state)
+legend('susceptibility','self-conf','i.c.','Location','NorthEastOutside')
+xlabel('Users');
+ylabel('Parameter value')
 % savefig(7, 'parameters', 'compact');
 
 

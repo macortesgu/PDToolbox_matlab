@@ -1,3 +1,5 @@
+function Aw = step_1_graph(P)
+
 %%graph part
 %% opinion  dynamics parameters
 
@@ -45,7 +47,7 @@ colorbar
 Gw.Edges.LWidths = 7*Gw.Edges.Weight/max(Gw.Edges.Weight);
 pp.LineWidth = Gw.Edges.LWidths;
 
-name_Graph = strcat('graph',netType,num2str(N));
+name_Graph = strcat('graph',netType,num2str(P));
 
 %savefig(1, name_Graph, 'compact');
 

@@ -1,5 +1,5 @@
-function F = fitness_user_finite(S,Q,Prefs,T_)
-% F (size (G.N,G.P) = fitness_user_finite(S,Q,Prefs,T_)
+function [F, I] = fitness_user_finite(S,Q,Prefs,T_,IncActive,op)
+% F (size (G.N,G.P) = fitness_user_finite(S,Q,Prefs,T_,IncActive)
 % input:
 % Q = population state (power consumption) (G.N,G.P)
 % Prefs = 3D Matrix of preferences for users, of size (G.N, T_, G.P)
@@ -37,9 +37,13 @@ devices_off = eq(S,ones(size(S)));
     %(1 + op(index)*(r(l) - q_t)/q_t)  
  %F(:,p) = (beta*f*preferred_choice(:,p).*(power(:,p)+1)) - beta*(power(:,p));
 %F = (beta*f*preferred_choice.*(power + 1)) - beta*(power); 
-alpha = value(beta);
+alpha = value(beta,op);
 
-I = incentives(ipow,beta,devices_off);
+if(IncActive == 1)
+    I = incentives(ipow,beta,devices_off);
+else
+    I = zeros(size(ipow));
+end
 
  F = (alpha.*preferred_choice) - beta*(power) + I;   
 %end

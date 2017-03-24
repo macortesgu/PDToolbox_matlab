@@ -1,4 +1,4 @@
-function s_i = pairwise_comparison(F, s, i, p, Prefs) % (F, z, s, i, p)
+function s_i = pairwise_comparison(F, s, i, p, Prefs, IncActive,op) % (F, z, s, i, p)
 % PAIRWISE_COMPARISON Computes the differece equation that describes the update
 %         of the populations' state following the pairwise comparison revision
 %         protocol. This revision protocol leads to the Smith dynamics with
@@ -46,7 +46,7 @@ Qj = devices.power(i)*(s_try(i,p)-1);%Power consumption for device i wether it i
 
 preferred_choice = eq(theta,s_try(i,p)-1);
 
-pi_j = fitness_user_finite_i(preferred_choice,beta,Qj,i,p);%fitness_user_finite_i(preferred_choice,beta,Qj);
+pi_j = fitness_user_finite_i(preferred_choice,beta,Qj,i,p,IncActive,op);%fitness_user_finite_i(preferred_choice,beta,Qj);
 
 rho_ij = max(pi_j - pi_i, 0)/1000;
 
