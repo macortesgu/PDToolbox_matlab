@@ -104,7 +104,11 @@ xlabel('Users');
 ylabel('Parameter value')
 % savefig(7, 'parameters', 'compact');
 
-Aw = step_1_graph(G.P);
+persistent Aw
+
+if isempty(Aw)
+   Aw = step_1_graph(G.P);
+end
 
 opinion = zeros(G.P,t_max);
 opinion(:,1) = initial_state;
@@ -115,8 +119,8 @@ opinion(:,1) = initial_state;
 %% Everything else  
 for t = 1: t_max
     
-    %Apagar los incentivos después de la 50 iteración
-    if(t>50)
+    %Apagar los incentivos después de la 100 iteración
+    if(t>100)
         IncActive = 0;
     end
     
