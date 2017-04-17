@@ -39,8 +39,11 @@ devices_off = eq(S,ones(size(S)));
 %F = (beta*f*preferred_choice.*(power + 1)) - beta*(power); 
 alpha = value(beta,op);
 
+pwc = rand(size(Q));
+
+
 if(IncActive == 1)
-    I = incentives(ipow,beta,devices_off);
+    I = incentives(ipow,beta,devices_off);%+s_incentives(ipow,alpha,pwc,op(2,:));
 else
     I = zeros(size(ipow));
 end
