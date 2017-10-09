@@ -8,7 +8,7 @@ function I = incentives(ipow,beta,devices_off)
 % validPeriod: Boolean vector indicating if the incentives are given for
 % each period (divisions for a week).
 
-gamma = 2*beta; %factor of additional surplus for changinf preference
+gamma = 1.5*beta; %factor of additional surplus for changinf preference
 
 %validPeriod = Iper();%period; %Analyze if consumption for the period is below or above average. If it is below average, then
 % no incentive is needed as it would not contribute to flatten the weekly

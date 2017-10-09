@@ -1,4 +1,4 @@
-function [F, I] = fitness_user_finite(S,Q,Prefs,T_,IncActive,op)
+function [F, I, theta_step, deltatheta] = fitness_user_finite(Snorm,Q,theta,IncActive,op,t,s_step)
 % F (size (G.N,G.P) = fitness_user_finite(S,Q,Prefs,T_,IncActive)
 % input:
 % Q = population state (power consumption) (G.N,G.P)
@@ -11,11 +11,9 @@ function [F, I] = fitness_user_finite(S,Q,Prefs,T_,IncActive,op)
 %global beta_ef alpha_ef mp op
 global devices
 
-power = Q/1000;
-theta = Prefs;
-%addcost es un porcentaje de costo agregado en forma de incentivos
-%negativos (mayor costo,menor utilidad) para los agentes con un perfil de  
-%consumo mayor.
+minq = 0.04;
+power = Q/1000; %kWh
+epsilon = 0.2; %rango de variación en la cual el usuario obtiene un beneficio, aunque no sea su preferencia exacta.
 
 %popul = size(Q,2);
 
@@ -28,26 +26,36 @@ beta = unit_cost(sumQ);
 %sumQi = sum(power);
 ipow = 1+ repmat(devices.power,1,size(Q,2))/1000;
 
-preferred_choice = eq((S-1), squeeze(theta(:,T_,:)));%    zeros(size(Q));
-devices_off = eq(S,ones(size(S)));
+%preferred_choice has into account the deviation from the desired load
+%profile, being proportional to the difference between actual and desired
+%preferences, if the difference is lesser than an elasticity limit. If
+%outside the limit, it is zero.
+%preferred_choice = eq((S-1), squeeze(theta(:,T_,:)));%    zeros(size(Q));
 
-%for p = 1 : popul
-        
-    %F(:,popul) = max(beta*(f*theta(:,T_,p)-1),0);
-    %(1 + op(index)*(r(l) - q_t)/q_t)  
- %F(:,p) = (beta*f*preferred_choice(:,p).*(power(:,p)+1)) - beta*(power(:,p));
-%F = (beta*f*preferred_choice.*(power + 1)) - beta*(power); 
-alpha = value(beta,op);
 
-pwc = rand(size(Q));
+deltatheta = Snorm-theta;
+vartheta = calc_vartheta(deltatheta,epsilon);
 
+%if(t == 149)
+ %   disp(deltatheta);
+%end
+
+devices_off = Snorm<minq;%eq(S,ones(size(S))); minq is the minimum proportion of perdio consumption considered as zero, in order to grant incentives
+
+alpha = value(beta,op(:,1));
+
+%pwc = rand(size(Q));
+energy_cost = beta*(power);
 
 if(IncActive == 1)
-    I = incentives(ipow,beta,devices_off);%+s_incentives(ipow,alpha,pwc,op(2,:));
+    [Isoc, theta_step] = s_incentives(theta,alpha,epsilon,op(:,2),Snorm,s_step,energy_cost);
+    I = Isoc;%incentives(ipow,beta,devices_off) + ;
 else
+    theta_step = 0;
     I = zeros(size(ipow));
 end
 
- F = (alpha.*preferred_choice) - beta*(power) + I;   
+ F = (alpha.*vartheta) - energy_cost;% + I;   
 %end
+
 

@@ -1,4 +1,4 @@
-function Prefs = pUndersample(PrefsOrig,factor)
+function Prefs = pUndersample(PrefsOrig,factor,strategies)
 
 T_ = size(PrefsOrig,2)/factor;
 Tperf = size(PrefsOrig,2);
@@ -21,16 +21,7 @@ else
         for dev = 1:N
             for t = 0:(T_-1)
                 occurrences(dev,t+1,u) = length(nonzeros(PrefsOrig(dev,(t*factor+1):(t*factor+factor),u)));
-                if occurrences(dev,t+1,u)>(0.5*factor)
-                    Prefs(dev,t+1,u) = 1;
-                else
-                    if occurrences(dev,t+1,u)==(0.5*factor)
-                        Prefs(dev,t+1,u) = round(rand);%binornd(1,0.5); %seleccion aleatoria
-                    else
-                        Prefs(dev,t+1,u) = 0;
-                    end
-                end
-                
+                Prefs(dev,t+1,u) = (round(occurrences(dev,t+1,u)/factor * strategies) / strategies);               
             end
         end
     end

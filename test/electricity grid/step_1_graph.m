@@ -3,12 +3,12 @@ function Aw = step_1_graph(P)
 %%graph part
 %% opinion  dynamics parameters
 
-netType = 'WA';
-K = 2;
+netType = 'WS';
+K = 4;
 
 switch netType
     
-    case 'WA'
+    case 'WS'
         % Watts-Strogatz Graph Model Parameters
         beta = 0.6; %link probability
         Graph = WattsStrogatz(P,K,beta); %%graph with small world properties

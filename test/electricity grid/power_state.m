@@ -1,4 +1,4 @@
-function Q = power_state(s)
+function Q = power_state(s,Stot)
 % POWER_STATE Computes the power consumption for each user(population of devices) during the period.
 % 
 % SYNOPSIS: z = STATE(s)
@@ -18,6 +18,8 @@ global devices
 % find the current social state 
 %z = zeros(max(G.S), G.P);
 
-devicesState = (s-1) & ones(size(s));
+%devicesState = (s-1) & ones(size(s));
 pow = repmat(devices.power,1,size(s,2));
-Q =pow.*devicesState;
+Q =pow.*(s./Stot);
+
+

@@ -5,12 +5,12 @@ function p = unit_cost(Q)
 % the function assumes equal price for different time periods, and a
 % dependency only on the quantity of energy generated.
 
-pH = 300;
+pH = 100;
 pC = 350;
 pG = 500;
-Hmax = 30;
-Cmax = 50;
-Gmax = 60;
+Hmax = 10;
+Cmax = 13;
+Gmax = 16;
 
 QkWh = Q/1000;
 
