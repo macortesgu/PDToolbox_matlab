@@ -1,4 +1,4 @@
-function [TRANS_MOD] = matrixAdjust(estrato, goalPow, aparato, TRANSref, devPower, step, length)
+function [TRANS_MOD] = matrixAdjust(estrato, goalPow, aparato, TRANSref, devPower, delta, length)
 maxIter = 1000; % iteraciones por cada matrix de transmision
 maxTries = 100; %maximo numero de variaciones en las matrices
 EMISref = [1 0; 0 1]; % es la misma porque solo son dos estados y la emisión es el estado
@@ -43,33 +43,45 @@ for t=1:maxTries
         disp(TRANStry);
     end
     
-       
+    
     
     % comprobar si hay que aumentar o disminuir el consumo
-    if subir==false % aumenta consumo
+    if subir==true % aumenta consumo
         switch cambios
             case 1
-                TRANStry = [T(1)+ 0.5*step  T(3)- 0.5*step;T(2)-0.5*step T(4) + 0.5*step];
+                TRANStry = [T(1)+ 0.5*delta  T(3)- 0.5*delta;T(2)-0.5*delta T(4) + 0.5*delta];
             case 2
-                TRANStry = [T(1)  T(3);T(2)-step T(4)+step];
+                if (T(2)==1)||(T(4)==1)
+                    disp('La matriz no puede ajustarse')
+                    TRANS_MOD = T;
+                    break
+                else
+                    TRANStry = [T(1)  T(3);T(2)-delta T(4)+delta];
+                end
             otherwise
-                TRANStry = [T(1)+ step  T(3)- step;T(2) T(4)];
+                TRANStry = [T(1)+ delta  T(3)- delta;T(2) T(4)];
         end
     else
         if subir==false %bajar consumo
-                        switch cambios
-                            case 1
-                                TRANStry = [T(1)- 0.5*step  T(3)+ 0.5*step;T(2)+0.5*step T(4)-0.5*step];
-                            case 2
-                                TRANStry = [T(1)+step  T(3)-step;T(2) T(4)];
-                            otherwise
-                                TRANStry = [T(1)  T(3);T(2)+step T(4)-step];
-                        end    
+            switch cambios
+                case 1
+                    TRANStry = [T(1)- 0.5*delta  T(3)+ 0.5*delta;T(2)+0.5*delta T(4)-0.5*delta];
+                case 2
+                    if (T(2)==1)||(T(4)==1)
+                        disp('La matriz no puede ajustarse')
+                        TRANS_MOD = T;
+                        break
                     else
-                                TRANS_MOD = T;
-                                break
+                        TRANStry = [T(1)  T(3);T(2)+delta T(4)-delta];
+                    end
+                otherwise
+                    TRANStry = [T(1)+delta  T(3)-delta;T(2) T(4)];
+            end
+        else
+            TRANS_MOD = T;
+            break
         end
-    end     
+    end
     testDevicePow = zeros(1,maxIter);
     for i = 1:maxIter
         [seq, ~] = hmmgenerate(length,TRANStry,EMISref);
@@ -77,7 +89,6 @@ for t=1:maxTries
         test_normalizado = (seq - 1);
         testDevicePow(i) = devPower*sum(test_normalizado)/(60*1000);
     end
-    disp(t);
     disp(goalPow);
     disp(mean(testDevicePow));
     % comprobación de cumplimiento, permitiendo una tolerancia
@@ -93,7 +104,7 @@ for t=1:maxTries
         else
             if goalPow < mean(testDevicePow)
                 subir = false; %baja consumo en la proxima iteracion porque esta volado
-                step = 0.5*step; % reduce el paso para acercarse mas lento
+                delta = 0.5*delta; % reduce el paso para acercarse mas lento
             end
         end        
     else %subir es false y viene reduciendo consumo
@@ -102,7 +113,7 @@ for t=1:maxTries
         else
             if goalPow > mean(testDevicePow) % se pasó y redujo mucho
                 subir = true;
-                step = 0.5*step; % reduce el paso para acercarse mas lento
+                delta = 0.5*delta; % reduce el paso para acercarse mas lento
             end
         end
     end            

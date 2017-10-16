@@ -15,7 +15,7 @@ global devices
 
 Qj = devices.power(i)*(s_try_norm);%Power consumption for device i wether it is on or off
 
-epsilon = 0.2;
+epsilon = 0.1;
 minq = 0.04;
 
 deltatheta = s_try_norm - theta;
