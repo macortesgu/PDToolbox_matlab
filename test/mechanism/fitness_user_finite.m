@@ -1,4 +1,4 @@
-function [F, I, theta_step, deltatheta] = fitness_user_finite(Snorm,Q,theta,IncActive,op,t,s_step)
+function [F, I, theta_step, deltatheta] = fitness_user_finite(Snorm,Q,theta,IncActive,op,t,s_step) %t,s_step)
 % F (size (G.N,G.P) = fitness_user_finite(S,Q,Prefs,T_,IncActive)
 % input:
 % Q = population state (power consumption) (G.N,G.P)
@@ -11,9 +11,9 @@ function [F, I, theta_step, deltatheta] = fitness_user_finite(Snorm,Q,theta,IncA
 %global beta_ef alpha_ef mp op
 global devices
 
-minq = 0.04;
+minq = 0.01;
 power = Q/1000; %kWh
-epsilon = 0.2; %rango de variación en la cual el usuario obtiene un beneficio, aunque no sea su preferencia exacta.
+epsilon = 0.15; %rango de variación en la cual el usuario obtiene un beneficio, aunque no sea su preferencia exacta.
 
 %popul = size(Q,2);
 
@@ -49,13 +49,13 @@ energy_cost = beta*(power);
 
 if(IncActive == 1)
     [Isoc, theta_step] = s_incentives(theta,alpha,epsilon,op(:,2),Snorm,s_step,energy_cost);
-    I = Isoc;%incentives(ipow,beta,devices_off) + ;
+    I = Isoc;% %+ incentives(ipow,beta,devices_off);
 else
     theta_step = 0;
     I = zeros(size(ipow));
 end
 
- F = (alpha.*vartheta) - energy_cost;% + I;   
+ F = (alpha.*vartheta) - energy_cost + I;   
 %end
 
 

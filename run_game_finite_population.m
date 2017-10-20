@@ -34,7 +34,7 @@ if G.verb == true
 end
 
 theta = squeeze(G.Prefs(:,G.period,:));
-s = zeros(G.N, G.P);% randi(max(G.S),G.N,G.P); %%(max(G.S).*theta); %strategy matrix. Each col is a population.
+s = (max(G.S).*theta); % randi(max(G.S),G.N,G.P); %%  ones(G.N, G.P); %strategy matrix. Each col is a population.
 
 % calculate the initial strategy of each agent given the proportions in x0
 
@@ -86,7 +86,6 @@ end
 
 initial_state = linspace(0.8,0.2,G.P);% %zeros(N,1)initial beliefs of users
 %c_eps = 1e-4;%1e-6; error aceptable para la convergencia
-%opEps = 0.4; Bounded confidence parameter for HK op dyn model
 
 % susceptibility (1-stubborness) theta of the agents
 susceptibility = ((logspace(2, 3, G.P)/1000))';%column vector of susceptibility
@@ -118,9 +117,6 @@ opinion(:,1) = initial_state;
 
 opinion2 = zeros(G.P,t_max); %opinion regarding susceptibility to change preferences due to social incentive.
 opinion2(:,1) = susceptibility; %initial conditions for 2nd dynamic are the susceptibilites of the agents.
-
-%opinion = bullo2(initial_state,P,Aw,theta,tMax,w, c_eps, 'plot');
-%[opinion]=bullo2(s,N,A,theta,tMax,w, c_eps, varargin)
 
 %theta_step = zeros(G.P,1);
 s_step = 1/max(G.S);
@@ -180,6 +176,7 @@ for t = 1: t_max
     [F, I, theta_step, deltatheta]= G.f(s_norm, Q, theta, IncActive, dualOpinion,t,s_step); %f(x, a);
      if (t == 299)
          disp(deltatheta)
+         disp(theta_step)
      end
     
     %update_agents = zeros(G.P,1);
@@ -199,7 +196,7 @@ for t = 1: t_max
             i = update_agents(k);
        % t
         
-            s_update(i,a) = G.revision_protocol(F, s, i, a, G.Prefs, IncActive,dualOpinion,deltatheta(i,a)); %(F(i,a), x, s, i, a)
+            s_update(i,a) = G.revision_protocol(F, s, i, a, G.Prefs, IncActive,dualOpinion,deltatheta(i,a), s_step); %(F(i,a), x, s, i, a)
         end
          s = s_update;   
     end

@@ -1,4 +1,4 @@
-function s_i = logit_choice(F, s, i, p, Prefs, IncActive,op,deltatheta)%(F, z, s, i, p)
+function s_i = logit_choice(F, s, i, p, Prefs, IncActive,dualOp,deltatheta, s_step)%(F, z, s, i, p)
 % LOGIT_CHOICE Computes the differece equation that describes the update of
 %         the populations' state following the logit choice revision protocol. 
 %         This revision protocol leads to the logit dynamics with a large 
@@ -82,9 +82,9 @@ s_try_norm = s_try(i,p)/G.S(p) - 1/max(G.S);
 i_norm = s(i,p)/G.S(p) - 1/max(G.S);
 
 
-pi_j = fitness_user_finite_i(theta,s_try_norm,i,sumQtry,IncActive,op(p));%fitness_user_finite_i(preferred_choice,beta,Qj);
+pi_j = fitness_user_finite_i(theta,s_try_norm,i,sumQtry,IncActive,dualOp(p,:), s_step);%fitness_user_finite_i(preferred_choice,beta,Qj); op(p) que toma si recibe dualOpinion?
 
-pi_i = fitness_user_finite_i(theta,i_norm,i,sumQtry,IncActive,op(p));
+pi_i = fitness_user_finite_i(theta,i_norm,i,sumQtry,IncActive,dualOp(p,:), s_step);
 
 eta = G.eta;
 F_ = exp( (pi_j/1000) / eta );

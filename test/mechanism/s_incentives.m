@@ -21,7 +21,7 @@ vartheta_inc = calc_vartheta(delta_theta_inc,epsilon);
 
 s_reward_factor = 0.1; %factor considering a plus of shifting preferences, mking the new preference more desirable than the natural one. Accounting for users change'histeresis
 
-I = alpha.*vartheta_inc - energy_cost*(1 - s_reward_factor);
+I = 1.5*alpha.*vartheta_inc - energy_cost*(1 - s_reward_factor);
 
 %TODO falta hacer que el cambio en theta sea permanente y se acumule.
      

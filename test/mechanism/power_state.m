@@ -20,6 +20,6 @@ global devices
 
 %devicesState = (s-1) & ones(size(s));
 pow = repmat(devices.power,1,size(s,2));
-Q =pow.*(s./Stot);
+Q =pow.*((s-1)./Stot); %s - 1 porque la primera estrategia sería no consumir nada, apagado.
 
 

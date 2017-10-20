@@ -1,4 +1,4 @@
-function Prefs = pUndersample(PrefsOrig,factor,strategies)
+function Prefs = pUndersample(PrefsOrig,factor,strategies) %underSample power keeping total energy
 
 T_ = size(PrefsOrig,2)/factor;
 Tperf = size(PrefsOrig,2);
